@@ -11,34 +11,54 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const [damage, setDamage] = useState(unit.damage || 0);
   const [currentHeat, setCurrentHeat] = useState(unit.currentHeat || 0);
   const [alive, setAlive] = useState(unit.alive);
+  const [repairCap, setRepairCap]=useState(unit.repairCap || 0)
 
   const rulesList = Object.entries(unit.table1)
     .filter(([type]) => type !== "repair")
     .map(([type, value]) => [value[damage][1], type])
     .filter(([ruleCode]) => ruleCode); // Skip invalid/null ruleCodes
 
-  const heatRulesList = unit.heat ? Object.entries(unit.heat)
-    .map(([type, value]) => [value[currentHeat][1], type])
-    .filter(([ruleCode]) => ruleCode) : [];
+
+
+  const getHeatRulesList = () => {
+    if (unit.heat) {
+      if (currentHeat < unit.heat.mechSpeed.length) {
+        return (
+        Object.entries(unit.heat)
+          .map(([type, value]) => [value[currentHeat][1], type])
+          .filter(([ruleCode]) => ruleCode)
+        )
+      } else {
+        return []
+      }
+    } else {
+      return [];
+    }
+  }
+
 
   const takeDamage = () => {
     if (damage < unit.table1.attack.length - 1) {
       setDamage((prev) => prev + 1);
       roster[index].damage = damage + 1;
+      if (unit.table1.repair[damage + 1][1] === "black") {
+        setRepairCap(damage + 1)
+        roster[index].repairCap= damage+1;
+      }
     } else {
       setAlive(false);
       roster[index].alive = false;
     }
   };
   const repairUnit = () => {
-    if (damage > 0) {
+    if (damage > repairCap && damage > 0) {
       setDamage((prev) => prev - 1);
       roster[index].damage = damage - 1;
     }
   };
 
   const takeHeat = () => {
-    if (currentHeat < unit.heat.mechSpeed.length - 1) {
+    if (currentHeat < 5) {//was unit.heat.mechSpeed.length - 1 but changed to 5 because they can go up to 6 in shutdown mode
       setCurrentHeat((prev) => prev + 1);
       roster[index].currentHeat = currentHeat + 1;
     }
@@ -79,6 +99,23 @@ export default function UnitCard({ unit, expandUnit, index }) {
     return style;
   };
 
+  const determineHeatImage = (value) => {
+    if (!alive) {
+      return(<span className={styles.dead}>
+                        <img src={`/assets/icons/bullets.jpg`}></img>
+                      </span>)
+    } else if(currentHeat > unit.heat.mechSpeed.length - 1) {
+      return (<span className={styles.dead}><img src={`/assets/icons/Shutdown.gif`}></img></span>)
+    } else {
+      return (
+        <span className={`${styles.tableStat} ${checkBackground(value[currentHeat][1])}`}>
+          {value[currentHeat][0]}
+        </span>
+      )
+
+    }
+  }
+
   return (
     <div>
       <img
@@ -97,7 +134,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
         See on Warrenborn
       </a>
       <section className={styles.damageTable}>
-        {unit.primary && (
+        {unit.primary != null && (
           <p className={styles.stat}>
             Primary: {unit.primary[0]} @ {unit.primary[1]}
           </p>
@@ -107,7 +144,9 @@ export default function UnitCard({ unit, expandUnit, index }) {
             Secondary: {unit.secondary[0]} @ {unit.secondary[1]}
           </p>
         )}
-        {unit.capacity && <p>Capacity: {unit.capacity}</p>}
+        {unit.capacity !== undefined && unit.capacity != 0 && (
+          <p>Capacity: {unit.capacity}</p>
+        )}
         {/* { unit.artillery && <p>Artillery: {unit.artillery}</p> } */}
         {unit.artilleryRange && <p>Artillery Range: {unit.artilleryRange}</p>}
         {unit.vent && <p className={styles.stat}>Vent: {unit.vent}</p>}
@@ -142,7 +181,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
                 {alive ? (
                   <span
                     className={`${styles.tableStat} ${checkBackground(
-                      value[damage][1]
+                      value[damage][1],
                     )}`}
                   >
                     {value[damage][0]}
@@ -156,7 +195,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
             );
           })}
           <div className={styles.rulesContainer}>
-            {rulesList.map(([ruleCode, type], i) => { //Damage rules
+            {rulesList.map(([ruleCode, type], i) => {
+              //Damage rules
               return (
                 <details className={styles.rule}>
                   <summary className={styles.ruleSummary}>
@@ -167,18 +207,19 @@ export default function UnitCard({ unit, expandUnit, index }) {
                 </details>
               );
             })}
-            {heatRulesList[0] && <h3>Heat Rules</h3> }
-            {heatRulesList.map(([ruleCode, type], i) => { //Heat rules
+            {getHeatRulesList()[0] && <h3>Heat Rules</h3>}
+            {getHeatRulesList().map(([ruleCode, type], i) => {
+              //Heat rules
               if (rules.heat[type] && rules.heat[type][ruleCode.slice(0, -1)]) {
-              return (
-                <details className={styles.rule}>
-                  <summary className={styles.ruleSummary}>
-                    <span className={checkBackground(ruleCode)}></span>
-                    {rules.heat[type][ruleCode.slice(0, -1)].name}
-                  </summary>
-                  <p>{rules.heat[type][ruleCode.slice(0, -1)].text}</p>
-                </details>
-              );
+                return (
+                  <details className={styles.rule}>
+                    <summary className={styles.ruleSummary}>
+                      <span className={checkBackground(ruleCode)}></span>
+                      {rules.heat[type][ruleCode.slice(0, -1)].name}
+                    </summary>
+                    <p>{rules.heat[type][ruleCode.slice(0, -1)].text}</p>
+                  </details>
+                );
               }
             })}
           </div>
@@ -210,19 +251,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
                 return (
                   <div className={styles.statsContainer} key={type}>
                     <img width="35px" src={`/assets/icons/${type}.jpg`}></img>
-                    {alive ? (
-                      <span
-                        className={`${styles.tableStat} ${checkBackground(
-                          value[currentHeat][1]
-                        )}`}
-                      >
-                        {value[currentHeat][0]}
-                      </span>
-                    ) : (
-                      <span className={styles.dead}>
-                        <img src={`/assets/icons/bullets.jpg`}></img>
-                      </span>
-                    )}
+                    {determineHeatImage(value)}
                   </div>
                 );
               })}

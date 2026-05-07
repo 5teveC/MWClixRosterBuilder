@@ -4,7 +4,7 @@ import { useState } from "react";
 import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
 
-// Strip trailing digits so "ballisticDamage2" maps to the "ballisticDamage" icon and rules
+// Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
 
 export default function UnitCard({ unit, expandUnit, index }) {
@@ -13,11 +13,14 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const [currentHeat, setCurrentHeat] = useState(unit.currentHeat || 0);
   const [alive, setAlive] = useState(unit.alive);
   const [repairCap, setRepairCap] = useState(unit.repairCap || 0);
-  const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
-  const flash = (msg, variant) => {
-    setToast({ msg, variant });
-    setTimeout(() => setToast(null), 1100);
+  const addToast = (msg, variant) => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, msg, variant }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 1100);
   };
 
   const rulesList = Object.entries(unit.table1)
@@ -45,11 +48,11 @@ export default function UnitCard({ unit, expandUnit, index }) {
         setRepairCap(damage + 1);
         roster[index].repairCap = damage + 1;
       }
-      flash("Damage applied", "damage");
+      addToast("Damage", "damage");
     } else {
       setAlive(false);
       roster[index].alive = false;
-      flash("Unit destroyed!", "damage");
+      addToast("Destroyed!", "damage");
     }
   };
 
@@ -57,7 +60,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
     if (damage > repairCap && damage > 0) {
       setDamage((prev) => prev - 1);
       roster[index].damage = damage - 1;
-      flash("Repaired", "repair");
+      addToast("Repaired", "repair");
     }
   };
 
@@ -65,7 +68,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
     if (currentHeat < 5) {
       setCurrentHeat((prev) => prev + 1);
       roster[index].currentHeat = currentHeat + 1;
-      flash("Heat applied", "heat");
+      addToast("Heat", "heat");
     }
   };
 
@@ -78,7 +81,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
       setCurrentHeat(0);
       roster[index].currentHeat = 0;
     }
-    flash("Vented", "vent");
+    addToast("Vented", "vent");
   };
 
   const checkBackground = (bgCode) => {
@@ -125,12 +128,14 @@ export default function UnitCard({ unit, expandUnit, index }) {
   return (
     <div className={`${styles.card} ${!alive ? styles.cardDead : ""}`}>
 
-      {/* ── Toast notification ── */}
-      {toast && (
-        <div className={`${styles.toast} ${styles[`toast_${toast.variant}`]}`}>
-          {toast.msg}
-        </div>
-      )}
+      {/* ── Stacking toasts ── */}
+      <div className={styles.toastStack}>
+        {toasts.map((t) => (
+          <div key={t.id} className={`${styles.toast} ${styles[`toast_${t.variant}`]}`}>
+            {t.msg}
+          </div>
+        ))}
+      </div>
 
       {/* ── Card header ── */}
       <div className={styles.cardHeader}>
@@ -180,8 +185,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
         <div className={styles.sectionHeader}>
           <span className={styles.sectionLabel}>Damage</span>
           <div className={styles.actionBtns}>
-            <button className={styles.btnDamage} onClick={takeDamage}>+ Damage</button>
-            <button className={styles.btnRepair} onClick={repairUnit}>↩ Repair</button>
+            <button className={`${styles.btn} ${styles.btnDamage}`} onClick={takeDamage}>+ Damage</button>
+            <button className={`${styles.btn} ${styles.btnRepair}`} onClick={repairUnit}>↩ Repair</button>
           </div>
         </div>
 
@@ -190,7 +195,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
             if (type === "repair") return null;
             return (
               <div className={styles.statCell} key={type}>
-                <img className={styles.statIcon} src={`/assets/icons/${baseType(type)}.jpg`} alt={baseType(type)} />
+                <img
+                  className={styles.statIcon}
+                  src={`/assets/icons/${baseType(type)}.jpg`}
+                  alt={baseType(type)}
+                  onError={(e) => { e.target.style.visibility = "hidden"; }}
+                />
                 {alive ? (
                   <span className={`${styles.statValue} ${checkBackground(value[damage][1])}`}>
                     {value[damage][0]}
@@ -230,15 +240,20 @@ export default function UnitCard({ unit, expandUnit, index }) {
           <div className={styles.sectionHeader}>
             <span className={styles.sectionLabel}>Heat</span>
             <div className={styles.actionBtns}>
-              <button className={styles.btnHeat} onClick={takeHeat}>+ Heat</button>
-              <button className={styles.btnVent} onClick={vent}>↓ Vent</button>
+              <button className={`${styles.btn} ${styles.btnHeat}`} onClick={takeHeat}>+ Heat</button>
+              <button className={`${styles.btn} ${styles.btnVent}`} onClick={vent}>↓ Vent</button>
             </div>
           </div>
 
           <div className={styles.statsRow}>
             {Object.entries(unit.heat).map(([type, value]) => (
               <div className={styles.statCell} key={type}>
-                <img className={styles.statIcon} src={`/assets/icons/${baseType(type)}.jpg`} alt={baseType(type)} />
+                <img
+                  className={styles.statIcon}
+                  src={`/assets/icons/${baseType(type)}.jpg`}
+                  alt={baseType(type)}
+                  onError={(e) => { e.target.style.visibility = "hidden"; }}
+                />
                 {determineHeatImage(value)}
               </div>
             ))}

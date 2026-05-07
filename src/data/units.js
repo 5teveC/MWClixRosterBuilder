@@ -2014,7 +2014,7 @@ const units = {
           [-1, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [-1, null],
@@ -2141,7 +2141,7 @@ const units = {
           [-1, "yellowS"],
           [-1, "redS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [-1, null],
@@ -2273,7 +2273,7 @@ const units = {
           [-1, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -2400,7 +2400,7 @@ const units = {
           [0, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -3570,7 +3570,7 @@ const units = {
           [-1, null],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -3712,7 +3712,7 @@ const units = {
           [0, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [-1, null],
@@ -3849,7 +3849,7 @@ const units = {
           [0, null],
           [-1, null],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -3986,7 +3986,7 @@ const units = {
           [0, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -4008,6 +4008,18 @@ const units = {
       vent: 2,
       table1: {
         ballisticDamage: [
+          [2, null],
+          [2, null],
+          [2, null],
+          [2, null],
+          [2, null],
+          [2, null],
+          [0, null],
+          [0, null],
+          [0, null],
+          [0, null],
+        ],
+        ballisticDamage2: [
           [3, null],
           [3, null],
           [2, null],
@@ -4081,6 +4093,13 @@ const units = {
           [0, "greenS"],
           [0, null],
           [0, null],
+          [0, null],
+          [0, "yellowS"],
+        ],
+        ballisticDamage2: [
+          [0, "greenS"],
+          [0, null],
+          [0, null],
           [-1, "yellowS"],
           [-1, "yellowS"],
         ],
@@ -4106,6 +4125,18 @@ const units = {
       vent: 3,
       table1: {
         energyDamage: [
+          [2, "greyS"],
+          [2, "greyS"],
+          [2, "greyS"],
+          [2, "greyS"],
+          [1, "greyS"],
+          [1, "greyS"],
+          [1, null],
+          [1, null],
+          [0, null],
+          [0, null],
+        ],
+        energyDamage2: [
           [3, null],
           [3, null],
           [2, null],
@@ -4176,6 +4207,13 @@ const units = {
       },
       heat: {
         energyDamage: [
+          [0, "greenS"],
+          [0, null],
+          [0, null],
+          [0, null],
+          [0, null],
+        ],
+        energyDamage2: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -5425,7 +5463,7 @@ const units = {
           [-1, null],
           [-1, null],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],
@@ -6125,7 +6163,7 @@ const units = {
           [-1, "yellowS"],
           [-1, "redS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [-1, null],
@@ -6267,7 +6305,7 @@ const units = {
           [0, "yellowS"],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [-1, null],
@@ -6419,7 +6457,7 @@ const units = {
           [-1, null],
           [-1, "yellowS"],
         ],
-        mechSpeed: [
+        quadSpeed: [
           [0, "greenS"],
           [0, null],
           [0, null],

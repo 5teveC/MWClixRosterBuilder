@@ -87,9 +87,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const checkBackground = (bgCode) => {
     if (!bgCode) return "";
     let style = "";
-    if (bgCode[bgCode.length - 1] === "C") {
-      style += styles.circle;
-    }
+    if (bgCode[bgCode.length - 1] === "C") style += styles.circle;
     bgCode = bgCode.slice(0, -1);
     if (bgCode === "green") style += ` ${styles.green}`;
     else if (bgCode === "yellow") style += ` ${styles.yellow}`;
@@ -113,13 +111,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
           <img src="/assets/icons/Shutdown.gif" alt="shutdown" />
         </span>
       );
-    } else {
-      return (
-        <span className={`${styles.statValue} ${checkBackground(value[currentHeat][1])}`}>
-          {value[currentHeat][0]}
-        </span>
-      );
     }
+    return (
+      <span className={`${styles.statValue} ${checkBackground(value[currentHeat][1])}`}>
+        {value[currentHeat][0]}
+      </span>
+    );
   };
 
   const heatRulesList = getHeatRulesList();
@@ -163,7 +160,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
               <span className={styles.staticStat}>Capacity: {unit.capacity}</span>
             )}
             {unit.artilleryRange && (
-              <span className={styles.staticStat}>Arty Range: {unit.artilleryRange}</span>
+              <span className={styles.staticStat}>Arty: {unit.artilleryRange}</span>
             )}
           </div>
           <a
@@ -176,6 +173,18 @@ export default function UnitCard({ unit, expandUnit, index }) {
           </a>
         </div>
       </div>
+
+      {/* ── Artillery token (always visible, even when damaged) ── */}
+      {unit.artilleryRange && (
+        <div className={styles.artilleryRow}>
+          <img
+            className={styles.artilleryToken}
+            src={`/assets/artillery/${unit.wId}.jpg`}
+            alt={`${unit.name} artillery token`}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+        </div>
+      )}
 
       {!alive && <div className={styles.destroyedBanner}>DESTROYED</div>}
       {alive && isShutdown && <div className={styles.shutdownBanner}>SHUTDOWN</div>}

@@ -10,7 +10,6 @@ import Link from "next/link";
 // Helpers
 // ---------------------------------------------------------------------------
 
-// Derive display type from unit data
 function getUnitType(unitCode, category) {
   if (category === "mechs") return "Mech";
   const unit = units.vehicles[unitCode];
@@ -19,7 +18,6 @@ function getUnitType(unitCode, category) {
   return "Vehicle";
 }
 
-// Collect all factions from both mechs and vehicles
 const ALL_FACTIONS = Array.from(
   new Set([
     ...Object.values(units.mechs).map((u) => u.faction),
@@ -27,7 +25,6 @@ const ALL_FACTIONS = Array.from(
   ])
 ).filter(Boolean).sort();
 
-// Flatten all units into one list with metadata
 const ALL_UNITS = [
   ...Object.entries(units.mechs).map(([code, unit]) => ({
     code,
@@ -56,11 +53,11 @@ export default function Roster() {
   const [selectedTypes, setSelectedTypes] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [clearConfirm, setClearConfirm] = useState(false);
 
   const rosterPoints = roster.reduce((sum, u) => sum + u.points, 0);
   const isOverPoints = rosterPoints > gamePoints;
 
-  // Toggle a value in a Set
   const toggleSet = (setter, value) => {
     setter((prev) => {
       const next = new Set(prev);
@@ -69,7 +66,6 @@ export default function Roster() {
     });
   };
 
-  // Filtered unit list
   const filteredUnits = useMemo(() => {
     return ALL_UNITS.filter((unit) => {
       if (selectedFactions.size > 0 && !selectedFactions.has(unit.faction)) return false;
@@ -87,8 +83,6 @@ export default function Roster() {
   const removeUnit = (uid) => {
     setRoster(roster.filter((u) => u.id !== uid));
   };
-
-  const [clearConfirm, setClearConfirm] = useState(false);
 
   const handleClear = () => {
     if (clearConfirm) {
@@ -124,7 +118,6 @@ export default function Roster() {
           </div>
         </div>
 
-        {/* Search */}
         <input
           className={styles.searchInput}
           type="text"
@@ -133,7 +126,6 @@ export default function Roster() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* Filter toggle */}
         <button
           className={styles.filterToggle}
           onClick={() => setFiltersOpen((v) => !v)}
@@ -145,7 +137,6 @@ export default function Roster() {
           <span className={styles.filterChevron}>{filtersOpen ? "▲" : "▼"}</span>
         </button>
 
-        {/* Filter panel */}
         {filtersOpen && (
           <div className={styles.filterPanel}>
             <div className={styles.filterSection}>
@@ -188,99 +179,86 @@ export default function Roster() {
         )}
       </header>
 
-      {/* ── Two-panel body ── */}
+      {/* ── Scrollable unit list ── */}
       <main className={styles.body}>
-
-        {/* Unit list */}
-        <section className={styles.unitList}>
-          <p className={styles.resultCount}>
-            {filteredUnits.length} unit{filteredUnits.length !== 1 ? "s" : ""}
-          </p>
-          {filteredUnits.map((unit) => (
-            <div className={styles.unitRow} key={unit.code}>
-              <img
-                className={styles.unitThumb}
-                src={`/assets/units/${unit.code}.jpg`}
-                alt={unit.name}
-                onError={(e) => { e.target.style.visibility = "hidden"; }}
-              />
-              <div className={styles.unitInfo}>
-                <span className={styles.unitName}>{unit.name}</span>
-                <span className={styles.unitMeta}>
-                  <span className={styles.unitType}>{unit.type}</span>
-                  <span className={styles.unitFaction}>{unit.faction}</span>
-                </span>
-              </div>
-              <div className={styles.unitRight}>
-                <span className={styles.unitPoints}>{unit.points}</span>
-                <button
-                  className={styles.addBtn}
-                  onClick={() => addUnit(unit)}
-                >
-                  +
-                </button>
-              </div>
+        <p className={styles.resultCount}>
+          {filteredUnits.length} unit{filteredUnits.length !== 1 ? "s" : ""}
+        </p>
+        {filteredUnits.map((unit) => (
+          <div className={styles.unitRow} key={unit.code}>
+            <img
+              className={styles.unitThumb}
+              src={`/assets/units/${unit.code}.jpg`}
+              alt={unit.name}
+              onError={(e) => { e.target.style.visibility = "hidden"; }}
+            />
+            <div className={styles.unitInfo}>
+              <span className={styles.unitName}>{unit.name}</span>
+              <span className={styles.unitMeta}>
+                <span className={styles.unitType}>{unit.type}</span>
+                <span className={styles.unitFaction}>{unit.faction}</span>
+              </span>
             </div>
-          ))}
-        </section>
-
-        {/* Roster panel */}
-        <section className={styles.rosterPanel}>
-          <div className={styles.rosterTitleRow}>
-            <h2 className={styles.rosterTitle}>Your Roster</h2>
-            {roster.length > 0 && (
-              <button
-                className={`${styles.clearBtn} ${clearConfirm ? styles.clearBtnConfirm : ""}`}
-                onClick={handleClear}
-                onBlur={() => setClearConfirm(false)}
-              >
-                {clearConfirm ? "Really?" : "Clear"}
-              </button>
-            )}
+            <div className={styles.unitRight}>
+              <span className={styles.unitPoints}>{unit.points}</span>
+              <button className={styles.addBtn} onClick={() => addUnit(unit)}>+</button>
+            </div>
           </div>
-          {roster.length === 0 ? (
-            <p className={styles.emptyRoster}>No units added yet.</p>
-          ) : (
-            <ul className={styles.rosterList}>
-              {roster.map((unit) => (
-                <li key={unit.id} className={styles.rosterItem}>
-                  <span className={styles.rosterName}>{unit.name}</span>
-                  <span className={styles.rosterPoints}>{unit.points}</span>
-                  <button
-                    className={styles.removeBtn}
-                    onClick={() => removeUnit(unit.id)}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {isOverPoints && (
-            <p className={styles.overWarning}>
-              ⚠ Over points limit by {rosterPoints - gamePoints}
-            </p>
-          )}
-        </section>
+        ))}
       </main>
 
-      {/* ── Sticky Footer ── */}
+      {/* ── Sticky Footer (always-visible roster + actions) ── */}
       <footer className={styles.footer}>
-        <div className={styles.footerPoints}>
-          <span className={isOverPoints ? styles.overPoints : styles.underPoints}>
-            {rosterPoints}
-          </span>
-          <span> / {gamePoints} pts</span>
-        </div>
-        <button
-          className={`${styles.playBtn} ${roster.length === 0 ? styles.playBtnDisabled : ""}`}
-          disabled={roster.length === 0}
-        >
-          <Link href="/game">▶ Play</Link>
-        </button>
-      </footer>
 
+        {/* Roster list */}
+        <div className={styles.footerRosterHeader}>
+          <span className={styles.footerRosterLabel}>Your Roster</span>
+          {roster.length > 0 && (
+            <button
+              className={`${styles.clearBtn} ${clearConfirm ? styles.clearBtnConfirm : ""}`}
+              onClick={handleClear}
+              onBlur={() => setClearConfirm(false)}
+            >
+              {clearConfirm ? "Really?" : "Clear"}
+            </button>
+          )}
+        </div>
+
+        {roster.length === 0 ? (
+          <p className={styles.emptyRoster}>No units added yet.</p>
+        ) : (
+          <ul className={styles.footerRosterList}>
+            {roster.map((unit) => (
+              <li key={unit.id} className={styles.footerRosterItem}>
+                <span className={styles.rosterName}>{unit.name}</span>
+                <span className={styles.rosterPoints}>{unit.points}</span>
+                <button className={styles.removeBtn} onClick={() => removeUnit(unit.id)}>✕</button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {isOverPoints && (
+          <p className={styles.overWarning}>⚠ Over by {rosterPoints - gamePoints} pts</p>
+        )}
+
+        {/* Points + Play row */}
+        <div className={styles.footerActions}>
+          <div className={styles.footerPoints}>
+            <span className={isOverPoints ? styles.overPoints : styles.underPoints}>
+              {rosterPoints}
+            </span>
+            <span className={styles.footerPointsSep}> / {gamePoints} pts</span>
+          </div>
+          <button
+            className={`${styles.playBtn} ${roster.length === 0 ? styles.playBtnDisabled : ""}`}
+            disabled={roster.length === 0}
+          >
+            <Link href="/game">▶ Play</Link>
+          </button>
+        </div>
+
+      </footer>
     </div>
   );
 }

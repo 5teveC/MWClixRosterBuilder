@@ -1,16 +1,430 @@
-.button{
-  padding: .5rem;
-  border-radius: .5rem;
-  font-size: 1rem;
-  margin: 10px;
+/* ── Base ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: #f4f4f2;
+  font-family: "Georgia", serif;
+  padding-bottom: 80px; /* space for sticky footer */
 }
 
-#playButton {
-  background-color: aquamarine;
-  & a{
-    font-size: 2rem;
-    text-decoration: none;
-    color: black;
-  }
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #1a1a2e;
+  color: white;
+  padding: 12px 16px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0;
+  color: #e0d7c6;
+}
+
+/* Points display */
+.pointsDisplay {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.underPoints {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #7ecfa0;
+}
+
+.overPoints {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #e05c5c;
+}
+
+.pointsSep {
+  color: #888;
+  font-size: 1rem;
+  margin: 0 2px;
+}
+
+.pointsInput {
+  width: 60px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  outline: none;
+  padding: 0;
+}
+
+.pointsInput::-webkit-inner-spin-button,
+.pointsInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.pointsLabel {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-left: 2px;
+}
+
+/* Search */
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+/* Filter toggle button */
+.filterToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #e0d7c6;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.filterBadge {
+  background: #c5a028;
+  color: #1a1a2e;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterChevron {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+/* Filter panel */
+.filterPanel {
+  background: #13132a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.filterSection {
+  margin-bottom: 12px;
+}
+
+.filterLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c5a028;
+  margin: 0 0 8px 0;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #ccc;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chipActive {
+  background: #c5a028;
+  border-color: #c5a028;
+  color: #1a1a2e;
+  font-weight: bold;
+}
+
+.clearFilters {
+  background: transparent;
+  border: none;
+  color: #e05c5c;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+/* ── Body ── */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Result count */
+.resultCount {
+  font-size: 0.75rem;
+  color: #888;
+  padding: 8px 16px 4px;
+  margin: 0;
+}
+
+/* ── Unit List ── */
+.unitList {
+  flex: 1;
+}
+
+.unitRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e0ddd6;
+  background: white;
+  transition: background 0.1s ease;
+}
+
+.unitRow:active {
+  background: #f0ede6;
+}
+
+.unitThumb {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #ddd;
+}
+
+.unitInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.unitName {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unitMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.unitType {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #1a1a2e;
+  color: #e0d7c6;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.unitFaction {
+  font-size: 0.7rem;
+  color: #666;
+  padding: 2px 0;
+}
+
+.unitRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.unitPoints {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #444;
+}
+
+.addBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  color: white;
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.addBtn:active {
+  transform: scale(0.9);
+  background: #c5a028;
+}
+
+/* ── Roster Panel ── */
+.rosterPanel {
+  background: #1a1a2e;
+  color: white;
+  padding: 16px;
+  border-top: 3px solid #c5a028;
+}
+
+.rosterTitle {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c5a028;
+  margin: 0 0 12px 0;
+}
+
+.emptyRoster {
+  color: #666;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.rosterList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rosterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.rosterName {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #e0d7c6;
+}
+
+.rosterPoints {
+  font-size: 0.85rem;
+  color: #aaa;
+  min-width: 30px;
+  text-align: right;
+}
+
+.removeBtn {
+  background: transparent;
+  border: none;
+  color: #e05c5c;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.removeBtn:hover {
+  background: rgba(224, 92, 92, 0.15);
+}
+
+.overWarning {
+  color: #e05c5c;
+  font-size: 0.85rem;
+  margin: 10px 0 0 0;
+  font-weight: bold;
+}
+
+/* ── Footer ── */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1a1a2e;
+  border-top: 2px solid #c5a028;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+.footerPoints {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.playBtn {
+  background: #c5a028;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.playBtn a {
+  color: #1a1a2e;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+
+.playBtnDisabled {
+  opacity: 0.4;
+  pointer-events: none;
 }

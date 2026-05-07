@@ -26,6 +26,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const [alive, setAlive] = useState(unit.alive);
   const [repairCap, setRepairCap] = useState(unit.repairCap || 0);
   const [toasts, setToasts] = useState([]);
+  const [artilleryOpen, setArtilleryOpen] = useState(false);
 
   const addToast = (msg, variant) => {
     const id = Date.now() + Math.random();
@@ -172,7 +173,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
               <span className={styles.staticStat}>Capacity: {unit.capacity}</span>
             )}
             {unit.artilleryRange && (
-              <span className={styles.staticStat}>Arty: {unit.artilleryRange}</span>
+              <span className={styles.staticStat}>Artillery Range: {unit.artilleryRange}″</span>
             )}
           </div>
           <a
@@ -193,8 +194,23 @@ export default function UnitCard({ unit, expandUnit, index }) {
             className={styles.artilleryToken}
             src={`/assets/artillery/${unit.wId}.jpg`}
             alt={`${unit.name} artillery token`}
+            onClick={() => setArtilleryOpen(true)}
             onError={(e) => { e.target.style.display = "none"; }}
           />
+        </div>
+      )}
+
+      {/* ── Artillery lightbox ── */}
+      {artilleryOpen && (
+        <div className={styles.lightboxOverlay} onClick={() => setArtilleryOpen(false)}>
+          <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.lightboxClose} onClick={() => setArtilleryOpen(false)}>✕</button>
+            <img
+              className={styles.lightboxImage}
+              src={`/assets/artillery/${unit.wId}.jpg`}
+              alt={`${unit.name} artillery token`}
+            />
+          </div>
         </div>
       )}
 

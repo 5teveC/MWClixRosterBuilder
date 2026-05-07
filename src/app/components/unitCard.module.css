@@ -159,6 +159,53 @@
   max-height: 160px;
   object-fit: contain;
   border-radius: 6px;
+  cursor: zoom-in;
+}
+
+/* ── Artillery lightbox ── */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: min(92vw, 520px);
+  max-height: 90dvh;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  border: 2px solid #c5a028;
+  color: #e0d7c6;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 201;
+}
+
+.lightboxImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* ── Status banners ── */

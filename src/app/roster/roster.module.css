@@ -116,6 +116,15 @@
   width: 100%;
   justify-content: space-between;
   margin-bottom: 4px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 36px;
+}
+
+.filterToggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .filterBadge {

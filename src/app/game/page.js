@@ -1,9 +1,7 @@
 "use client";
 
 import styles from "./game.module.css";
-
 import { useRoster } from "@/context/RosterContext";
-import { useState } from "react";
 import Link from "next/link";
 import UnitCard from "@/app/components/UnitCard";
 
@@ -11,38 +9,62 @@ export default function Game() {
   const { roster, setRoster } = useRoster();
 
   const expandUnit = (index) => () => {
-    var unit = roster[index];
-    if (unit.expanded) {
-      unit.expanded = false;
-    } else {
-      unit.expanded = true;
-    }
-    setRoster([...roster]); // Trigger a re-render by updating the roster state
-
+    const unit = roster[index];
+    unit.expanded = !unit.expanded;
+    setRoster([...roster]);
   };
 
+  const getStatus = (unit) => {
+    if (!unit.alive) return { label: "Destroyed", cls: styles.statusDead };
+    if (unit.heat && unit.currentHeat > unit.heat.mechSpeed.length - 1)
+      return { label: "Shutdown", cls: styles.statusShutdown };
+    return null;
+  };
 
   return (
-    <div>
-      <h1>GAME</h1>
-      <button className={`${styles.button} ${styles.adjustButton}`}>
-        <Link href={"/roster"}>Adjust Roster</Link>
-      </button>
-      <section className={styles.unitsSection}>
-        {roster.map((unit, index) => (
-          <div
-            className={styles.card}
-            key={unit.id + index}
-            onClick={!unit.expanded ? expandUnit(index) : null}
-          >
-            {unit.expanded ? (
-              <UnitCard unit={unit} expandUnit={expandUnit} index={index} />
-            ) : (
-              <h2>{unit.name}</h2>
-            )}
-          </div>
-        ))}
-      </section>
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Battle</h1>
+        <Link href="/roster" className={styles.adjustLink}>← Roster</Link>
+      </header>
+
+      <main className={styles.unitList}>
+        {roster.map((unit, index) =>
+          unit.expanded ? (
+            <UnitCard key={unit.id} unit={unit} expandUnit={expandUnit} index={index} />
+          ) : (
+            <div
+              key={unit.id}
+              className={`${styles.collapsedCard} ${!unit.alive ? styles.deadCard : ""}`}
+              onClick={expandUnit(index)}
+            >
+              <img
+                className={styles.thumb}
+                src={`/assets/units/${unit.wId}.jpg`}
+                alt={unit.name}
+                onError={(e) => { e.target.style.visibility = "hidden"; }}
+              />
+              <div className={styles.collapsedInfo}>
+                <span className={styles.collapsedName}>{unit.name}</span>
+                {getStatus(unit) && (
+                  <span className={`${styles.statusBadge} ${getStatus(unit).cls}`}>
+                    {getStatus(unit).label}
+                  </span>
+                )}
+              </div>
+              <div className={styles.collapsedPips}>
+                {(unit.damage || 0) > 0 && (
+                  <span className={styles.dmgPip}>DMG {unit.damage}</span>
+                )}
+                {(unit.currentHeat || 0) > 0 && (
+                  <span className={styles.heatPip}>HEAT {unit.currentHeat}</span>
+                )}
+              </div>
+              <span className={styles.chevron}>›</span>
+            </div>
+          )
+        )}
+      </main>
     </div>
   );
 }

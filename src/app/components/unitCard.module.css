@@ -1,108 +1,339 @@
-.close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+/* ── Card wrapper ── */
+.card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  font-family: "Georgia", serif;
 }
 
-.close:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+.cardDead {
+  filter: grayscale(60%);
+  opacity: 0.75;
 }
 
-.button {
-  background-color: aquamarine;
-  margin: 15px;
-  padding: 0.4rem;
-  border-radius: 0.4rem;
-  font-size: 1.3rem;
+/* ── Card header ── */
+.cardHeader {
+  display: flex;
+  gap: 14px;
+  padding: 14px 14px 10px;
+  background: #1a1a2e;
+  color: white;
 }
 
 .unitImage {
-  float: left;
-  margin-right: 4%;
-  width: 40%;
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 7px;
+  flex-shrink: 0;
+  background: #333;
 }
 
-.stat{
-  margin: 5px;
-}
-
-.damageTable {
+.headerInfo {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 1rem;
+  gap: 3px;
+  min-width: 0;
 }
-.damageContainer {
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.unitName {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #e0d7c6;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.closeBtn:hover {
+  color: #e05c5c;
+}
+
+.variant {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0;
+}
+
+.faction {
+  font-size: 0.75rem;
+  color: #c5a028;
+  margin: 0;
+}
+
+.staticStats {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  margin-top: 1rem;
-  justify-content: space-evenly;
-}
-.statsContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 1rem;
-  gap:10px;
-}
-.tableStat {
-  display: inline-block;
-  width: 35px;
-  height: 35px;
-  text-align: center;
-  align-content: center;
-  font-size: 1.2rem;
+  gap: 6px;
+  margin-top: 4px;
 }
 
-.rulesContainer {
+.staticStat {
+  font-size: 0.72rem;
+  color: #aaa;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.warrenborn {
+  font-size: 0.7rem;
+  color: #5599cc;
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+.warrenborn:hover {
+  text-decoration: underline;
+}
+
+/* ── Status banners ── */
+.destroyedBanner {
+  background: #e05c5c;
+  color: white;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  padding: 5px;
+}
+
+.shutdownBanner {
+  background: #c5a028;
+  color: #1a1a2e;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  padding: 5px;
+}
+
+/* ── Sections (damage / heat) ── */
+.section {
+  padding: 12px 14px;
+  border-top: 1px solid #e8e5e0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sectionLabel {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c5a028;
+}
+
+.actionBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.btnDamage,
+.btnRepair,
+.btnHeat,
+.btnVent {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: bold;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.1s ease;
+}
+
+.btnDamage:active,
+.btnRepair:active,
+.btnHeat:active,
+.btnVent:active {
+  opacity: 0.7;
+}
+
+.btnDamage {
+  background: #c0392b;
+  color: white;
+}
+
+.btnRepair {
+  background: #2e6da4;
+  color: white;
+}
+
+.btnHeat {
+  background: #d97a28;
+  color: white;
+}
+
+.btnVent {
+  background: #27875a;
+  color: white;
+}
+
+/* ── Stats row ── */
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.statCell {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  margin: 20px 5px;
+  align-items: center;
+  gap: 6px;
 }
+
+.statIcon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.statValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  border-radius: 4px;
+}
+
+.statDead {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.statDead img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* ── Rules ── */
+.rulesSection {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rule {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
 .ruleSummary {
   display: flex;
   align-items: center;
-  margin-top: 1rem;
-  width: 100%;
   gap: 10px;
-  & span {
-    width: 25px;
-    height: 25px;
-  }
+  padding: 8px 10px;
+  background: #f5f3ef;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
+.ruleSummary::-webkit-details-marker {
+  display: none;
+}
+
+.ruleSummary::after {
+  content: "›";
+  margin-left: auto;
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+details[open] .ruleSummary::after {
+  content: "‹";
+}
+
+.ruleColor {
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ruleText {
+  padding: 8px 12px 10px;
+  margin: 0;
+  font-size: 0.83rem;
+  color: #444;
+  background: #faf9f7;
+  line-height: 1.5;
+  border-top: 1px solid #e8e5e0;
+}
+
+/* ── Color tokens ── */
 .circle {
-  border-radius: 50%;
+  border-radius: 50% !important;
 }
+
 .red {
-  background-color: red;
+  background-color: #c0392b;
   color: white;
 }
+
 .green {
-  background-color: green;
+  background-color: #27875a;
   color: white;
 }
+
 .blue {
-  background-color: blue;
+  background-color: #2e6da4;
   color: white;
-
 }
+
 .yellow {
-  background-color: yellow;
+  background-color: #e8c42a;
+  color: #1a1a2e;
 }
-.grey {
-  background-color: gray;
-  color: white;
 
+.grey {
+  background-color: #7a7a7a;
+  color: white;
 }
+
 .black {
-  background-color: black;
-  color : white;
+  background-color: #1a1a2e;
+  color: white;
 }

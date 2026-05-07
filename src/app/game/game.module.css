@@ -1,27 +1,154 @@
-.card {
-  border-radius: 6px;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0 1px 5px 0 rgba(0, 0, 0, 0.12);
-  padding: 5%;
-  margin: 3vh;
-  position: relative;
-  width:75vw;
-}
-
-.unitsSection{
+/* ── Page ── */
+.page {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  min-height: 100dvh;
+  background: #f0ede8;
+  font-family: "Georgia", serif;
 }
 
-.adjustButton {
-  background-color: aquamarine;
-  padding: .4rem;
-  border-radius: .4rem;
-  & a{
-    font-size: 2rem;
-    text-decoration: none;
-    color: black;
-  }
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #1a1a2e;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+  color: #e0d7c6;
+}
+
+.adjustLink {
+  font-size: 0.82rem;
+  color: #c5a028;
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid #c5a028;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Unit list ── */
+.unitList {
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ── Collapsed card ── */
+.collapsedCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.collapsedCard:active {
+  background: #f0ede6;
+}
+
+.deadCard {
+  opacity: 0.45;
+}
+
+.thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #ddd;
+}
+
+.collapsedInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.collapsedName {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusBadge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.statusDead {
+  background: #e05c5c;
+  color: white;
+}
+
+.statusShutdown {
+  background: #c5a028;
+  color: #1a1a2e;
+}
+
+.collapsedPips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dmgPip {
+  font-size: 0.68rem;
+  font-weight: bold;
+  background: #e05c5c;
+  color: white;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.heatPip {
+  font-size: 0.68rem;
+  font-weight: bold;
+  background: #d97a28;
+  color: white;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.chevron {
+  font-size: 1.6rem;
+  color: #bbb;
+  flex-shrink: 0;
+  line-height: 1;
 }

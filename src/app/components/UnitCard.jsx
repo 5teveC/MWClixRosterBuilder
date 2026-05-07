@@ -147,7 +147,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
         <div className={styles.headerInfo}>
           <div className={styles.headerRow}>
             <h2 className={styles.unitName}>{unit.name}</h2>
-            <button className={styles.closeBtn} onClick={expandUnit(index)} aria-label="Collapse">✕</button>
+            <button className={styles.closeBtn} onClick={expandUnit(index)} aria-label="Collapse">▲</button>
           </div>
           {unit.variant && <p className={styles.variant}>{unit.variant}</p>}
           {unit.faction && <p className={styles.faction}>{unit.faction}</p>}

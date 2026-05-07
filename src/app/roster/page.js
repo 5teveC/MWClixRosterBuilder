@@ -88,6 +88,17 @@ export default function Roster() {
     setRoster(roster.filter((u) => u.id !== uid));
   };
 
+  const [clearConfirm, setClearConfirm] = useState(false);
+
+  const handleClear = () => {
+    if (clearConfirm) {
+      setRoster([]);
+      setClearConfirm(false);
+    } else {
+      setClearConfirm(true);
+    }
+  };
+
   const activeFilterCount = selectedFactions.size + selectedTypes.size;
 
   return (
@@ -215,7 +226,18 @@ export default function Roster() {
 
         {/* Roster panel */}
         <section className={styles.rosterPanel}>
-          <h2 className={styles.rosterTitle}>Your Roster</h2>
+          <div className={styles.rosterTitleRow}>
+            <h2 className={styles.rosterTitle}>Your Roster</h2>
+            {roster.length > 0 && (
+              <button
+                className={`${styles.clearBtn} ${clearConfirm ? styles.clearBtnConfirm : ""}`}
+                onClick={handleClear}
+                onBlur={() => setClearConfirm(false)}
+              >
+                {clearConfirm ? "Really?" : "Clear"}
+              </button>
+            )}
+          </div>
           {roster.length === 0 ? (
             <p className={styles.emptyRoster}>No units added yet.</p>
           ) : (

@@ -7,6 +7,10 @@ import rules from "../../data/rules";
 // Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
 
+// Some icon filenames have non-standard capitalisation on disk
+const ICON_NAME = { quadSpeed: "QuadSpeed", wheeledSpeed: "WheeledSpeed" };
+const iconFile = (type) => ICON_NAME[baseType(type)] ?? baseType(type);
+
 // Find the length of the heat table using whichever speed key is present
 // (mechs use mechSpeed, vehicles use trackedSpeed, hoverSpeed, etc.)
 const heatTableLength = (heat) => {
@@ -214,7 +218,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
               <div className={styles.statCell} key={type}>
                 <img
                   className={styles.statIcon}
-                  src={`/assets/icons/${baseType(type)}.jpg`}
+                  src={`/assets/icons/${iconFile(type)}.jpg`}
                   alt={baseType(type)}
                   onError={(e) => { e.target.style.visibility = "hidden"; }}
                 />
@@ -267,7 +271,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
               <div className={styles.statCell} key={type}>
                 <img
                   className={styles.statIcon}
-                  src={`/assets/icons/${baseType(type)}.jpg`}
+                  src={`/assets/icons/${iconFile(type)}.jpg`}
                   alt={baseType(type)}
                   onError={(e) => { e.target.style.visibility = "hidden"; }}
                 />

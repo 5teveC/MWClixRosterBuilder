@@ -54,6 +54,7 @@ export default function Roster() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [clearConfirm, setClearConfirm] = useState(false);
+  const [factionInfoOpen, setFactionInfoOpen] = useState(false);
 
   const rosterPoints = roster.reduce((sum, u) => sum + u.points, 0);
   const isOverPoints = rosterPoints > gamePoints;
@@ -154,7 +155,36 @@ export default function Roster() {
               </div>
             </div>
             <div className={styles.filterSection}>
-              <p className={styles.filterLabel}>Faction</p>
+              <div className={styles.filterLabelRow}>
+                <p className={styles.filterLabel}>Faction</p>
+                <button
+                  className={styles.factionInfoBtn}
+                  onClick={() => setFactionInfoOpen((v) => !v)}
+                  aria-label="Faction info"
+                >?</button>
+              </div>
+              {factionInfoOpen && (
+                <div className={styles.factionInfoPanel}>
+                  {[
+                    ["Banson's Raiders",    "Easier to fully repair (few repair limit markers)"],
+                    ["Dragon's Fury",       "Better attack ratings"],
+                    ["Highlanders",         "Able to absorb more damage (longer dials)"],
+                    ["House Liao",          "Special Abilities — Awe, Fanaticism, Ruthless"],
+                    ["Jade Falcons",        "Higher vent ratings & improved Death From Above"],
+                    ["Republic of the Sphere", "Generalist faction, more Command ability"],
+                    ["Spirit Cats",         "Better energy weapon ratings (longer range, more damage)"],
+                    ["Steel Wolves",        "Berserker dials — get better after taking damage"],
+                    ["Stormhammers",        "Higher damage ratings but poorer defense (glass jawed)"],
+                    ["Swordsworn",          "Better ballistic weapon ratings (more damage & special effects)"],
+                  ].map(([faction, desc]) => (
+                    <div key={faction} className={styles.factionInfoRow}>
+                      <span className={styles.factionInfoName}>{faction}</span>
+                      <span className={styles.factionInfoDesc}>{desc}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className={styles.filterChips}>
                 {ALL_FACTIONS.map((faction) => (
                   <button
@@ -250,12 +280,13 @@ export default function Roster() {
             </span>
             <span className={styles.footerPointsSep}> / {gamePoints} pts</span>
           </div>
-          <button
+          <Link
+            href="/game"
             className={`${styles.playBtn} ${roster.length === 0 ? styles.playBtnDisabled : ""}`}
-            disabled={roster.length === 0}
+            onClick={(e) => { if (roster.length === 0) e.preventDefault(); }}
           >
-            <Link href="/game">▶ Play</Link>
-          </button>
+            ▶ Play
+          </Link>
         </div>
 
       </footer>

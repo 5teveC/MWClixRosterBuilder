@@ -4,12 +4,21 @@ import { useState } from "react";
 import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
 
+// Strip trailing digits so "ballisticDamage2" maps to the "ballisticDamage" icon and rules
+const baseType = (type) => type.replace(/\d+$/, "");
+
 export default function UnitCard({ unit, expandUnit, index }) {
   const { roster, setRoster } = useRoster();
   const [damage, setDamage] = useState(unit.damage || 0);
   const [currentHeat, setCurrentHeat] = useState(unit.currentHeat || 0);
   const [alive, setAlive] = useState(unit.alive);
   const [repairCap, setRepairCap] = useState(unit.repairCap || 0);
+  const [toast, setToast] = useState(null);
+
+  const flash = (msg, variant) => {
+    setToast({ msg, variant });
+    setTimeout(() => setToast(null), 1100);
+  };
 
   const rulesList = Object.entries(unit.table1)
     .filter(([type]) => type !== "repair")
@@ -36,9 +45,11 @@ export default function UnitCard({ unit, expandUnit, index }) {
         setRepairCap(damage + 1);
         roster[index].repairCap = damage + 1;
       }
+      flash("Damage applied", "damage");
     } else {
       setAlive(false);
       roster[index].alive = false;
+      flash("Unit destroyed!", "damage");
     }
   };
 
@@ -46,6 +57,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
     if (damage > repairCap && damage > 0) {
       setDamage((prev) => prev - 1);
       roster[index].damage = damage - 1;
+      flash("Repaired", "repair");
     }
   };
 
@@ -53,6 +65,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
     if (currentHeat < 5) {
       setCurrentHeat((prev) => prev + 1);
       roster[index].currentHeat = currentHeat + 1;
+      flash("Heat applied", "heat");
     }
   };
 
@@ -65,6 +78,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
       setCurrentHeat(0);
       roster[index].currentHeat = 0;
     }
+    flash("Vented", "vent");
   };
 
   const checkBackground = (bgCode) => {
@@ -111,6 +125,13 @@ export default function UnitCard({ unit, expandUnit, index }) {
   return (
     <div className={`${styles.card} ${!alive ? styles.cardDead : ""}`}>
 
+      {/* ── Toast notification ── */}
+      {toast && (
+        <div className={`${styles.toast} ${styles[`toast_${toast.variant}`]}`}>
+          {toast.msg}
+        </div>
+      )}
+
       {/* ── Card header ── */}
       <div className={styles.cardHeader}>
         <img
@@ -151,13 +172,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
         </div>
       </div>
 
-      {!alive && (
-        <div className={styles.destroyedBanner}>DESTROYED</div>
-      )}
-
-      {alive && isShutdown && (
-        <div className={styles.shutdownBanner}>SHUTDOWN</div>
-      )}
+      {!alive && <div className={styles.destroyedBanner}>DESTROYED</div>}
+      {alive && isShutdown && <div className={styles.shutdownBanner}>SHUTDOWN</div>}
 
       {/* ── Damage section ── */}
       <div className={styles.section}>
@@ -174,7 +190,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
             if (type === "repair") return null;
             return (
               <div className={styles.statCell} key={type}>
-                <img className={styles.statIcon} src={`/assets/icons/${type}.jpg`} alt={type} />
+                <img className={styles.statIcon} src={`/assets/icons/${baseType(type)}.jpg`} alt={baseType(type)} />
                 {alive ? (
                   <span className={`${styles.statValue} ${checkBackground(value[damage][1])}`}>
                     {value[damage][0]}
@@ -191,15 +207,19 @@ export default function UnitCard({ unit, expandUnit, index }) {
 
         {rulesList.length > 0 && (
           <div className={styles.rulesSection}>
-            {rulesList.map(([ruleCode, type], i) => (
-              <details key={i} className={styles.rule}>
-                <summary className={styles.ruleSummary}>
-                  <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
-                  {rules.damage[type][ruleCode.slice(0, -1)].name}
-                </summary>
-                <p className={styles.ruleText}>{rules.damage[type][ruleCode.slice(0, -1)].text}</p>
-              </details>
-            ))}
+            {rulesList.map(([ruleCode, type], i) => {
+              const bt = baseType(type);
+              if (!rules.damage[bt] || !rules.damage[bt][ruleCode.slice(0, -1)]) return null;
+              return (
+                <details key={i} className={styles.rule}>
+                  <summary className={styles.ruleSummary}>
+                    <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
+                    {rules.damage[bt][ruleCode.slice(0, -1)].name}
+                  </summary>
+                  <p className={styles.ruleText}>{rules.damage[bt][ruleCode.slice(0, -1)].text}</p>
+                </details>
+              );
+            })}
           </div>
         )}
       </div>
@@ -218,7 +238,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
           <div className={styles.statsRow}>
             {Object.entries(unit.heat).map(([type, value]) => (
               <div className={styles.statCell} key={type}>
-                <img className={styles.statIcon} src={`/assets/icons/${type}.jpg`} alt={type} />
+                <img className={styles.statIcon} src={`/assets/icons/${baseType(type)}.jpg`} alt={baseType(type)} />
                 {determineHeatImage(value)}
               </div>
             ))}
@@ -227,18 +247,17 @@ export default function UnitCard({ unit, expandUnit, index }) {
           {heatRulesList.length > 0 && (
             <div className={styles.rulesSection}>
               {heatRulesList.map(([ruleCode, type], i) => {
-                if (rules.heat[type] && rules.heat[type][ruleCode.slice(0, -1)]) {
-                  return (
-                    <details key={i} className={styles.rule}>
-                      <summary className={styles.ruleSummary}>
-                        <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
-                        {rules.heat[type][ruleCode.slice(0, -1)].name}
-                      </summary>
-                      <p className={styles.ruleText}>{rules.heat[type][ruleCode.slice(0, -1)].text}</p>
-                    </details>
-                  );
-                }
-                return null;
+                const bt = baseType(type);
+                if (!rules.heat[bt] || !rules.heat[bt][ruleCode.slice(0, -1)]) return null;
+                return (
+                  <details key={i} className={styles.rule}>
+                    <summary className={styles.ruleSummary}>
+                      <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
+                      {rules.heat[bt][ruleCode.slice(0, -1)].name}
+                    </summary>
+                    <p className={styles.ruleText}>{rules.heat[bt][ruleCode.slice(0, -1)].text}</p>
+                  </details>
+                );
               })}
             </div>
           )}

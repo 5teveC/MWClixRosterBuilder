@@ -1,3 +1,31 @@
+/* ── Toast notification ── */
+@keyframes toastFade {
+  0%   { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+.toast {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  animation: toastFade 1.1s ease-out forwards;
+}
+
+.toast_damage  { background: #c0392b; color: white; }
+.toast_repair  { background: #2e6da4; color: white; }
+.toast_heat    { background: #d97a28; color: white; }
+.toast_vent    { background: #27875a; color: white; }
+
 /* ── Card wrapper ── */
 .card {
   background: white;
@@ -5,6 +33,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   font-family: "Georgia", serif;
+  position: relative;
 }
 
 .cardDead {

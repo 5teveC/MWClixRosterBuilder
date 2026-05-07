@@ -29,6 +29,23 @@
   color: #e0d7c6;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rulesBtn {
+  font-size: 0.82rem;
+  color: #e0d7c6;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
 .adjustLink {
   font-size: 0.82rem;
   color: #c5a028;
@@ -37,6 +54,98 @@
   border: 1px solid #c5a028;
   border-radius: 6px;
   letter-spacing: 0.03em;
+}
+
+/* ── Rules overlay ── */
+.rulesOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rulesPanel {
+  background: #1a1a2e;
+  width: 100%;
+  max-width: 680px;
+  max-height: 88dvh;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rulesPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.rulesPanelTitle {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #e0d7c6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.rulesCloseBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.rulesCloseBtn:hover {
+  color: #e05c5c;
+}
+
+.rulesPanelBody {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rulesEntry {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding-bottom: 20px;
+}
+
+.rulesEntry:last-child {
+  border-bottom: none;
+}
+
+.rulesEntryTitle {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c5a028;
+  margin: 0 0 10px 0;
+}
+
+.rulesEntryPara {
+  font-size: 0.85rem;
+  color: #c8c2b8;
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+.rulesEntryPara:last-child {
+  margin-bottom: 0;
 }
 
 /* ── Unit list ── */

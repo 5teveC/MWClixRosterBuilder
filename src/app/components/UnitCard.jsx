@@ -12,7 +12,6 @@ const ICON_NAME = { quadSpeed: "QuadSpeed", wheeledSpeed: "WheeledSpeed" };
 const iconFile = (type) => ICON_NAME[baseType(type)] ?? baseType(type);
 
 // Find the length of the heat table using whichever speed key is present
-// (mechs use mechSpeed, vehicles use trackedSpeed, hoverSpeed, etc.)
 const heatTableLength = (heat) => {
   if (!heat) return 0;
   const speedKey = Object.keys(heat).find((k) => k.endsWith("Speed"));
@@ -27,6 +26,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const [repairCap, setRepairCap] = useState(unit.repairCap || 0);
   const [toasts, setToasts] = useState([]);
   const [artilleryOpen, setArtilleryOpen] = useState(false);
+  const [applyHeatMods, setApplyHeatMods] = useState(true);
 
   const addToast = (msg, variant) => {
     const id = Date.now() + Math.random();
@@ -34,6 +34,21 @@ export default function UnitCard({ unit, expandUnit, index }) {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 1100);
+  };
+
+  // Returns the heat modifier for a given stat type at the current heat level.
+  // Heat table entries are [displayValue, colorCode]. For speed-type stats the
+  // displayed value IS the modified value (e.g. "4"), for damage-type stats it
+  // is a numeric modifier (e.g. "-1"). We only apply numeric deltas.
+  const getHeatMod = (type) => {
+    if (!applyHeatMods || !unit.heat) return 0;
+    const bt = baseType(type);
+    if (!unit.heat[bt]) return 0;
+    if (currentHeat >= heatTableLength(unit.heat)) return 0;
+    const entry = unit.heat[bt][currentHeat];
+    if (!entry) return 0;
+    const delta = Number(entry[0]);
+    return isNaN(delta) ? 0 : delta;
   };
 
   const rulesList = Object.entries(unit.table1)
@@ -95,6 +110,14 @@ export default function UnitCard({ unit, expandUnit, index }) {
       roster[index].currentHeat = 0;
     }
     addToast("Vented", "vent");
+  };
+
+  const coolOne = () => {
+    if (currentHeat > 0) {
+      setCurrentHeat((prev) => prev - 1);
+      roster[index].currentHeat = currentHeat - 1;
+      addToast("Cooled", "vent");
+    }
   };
 
   const checkBackground = (bgCode) => {
@@ -187,7 +210,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
         </div>
       </div>
 
-      {/* ── Artillery token (always visible, even when damaged) ── */}
+      {/* ── Artillery token ── */}
       {unit.artilleryRange && (
         <div className={styles.artilleryRow}>
           <img
@@ -230,6 +253,11 @@ export default function UnitCard({ unit, expandUnit, index }) {
         <div className={styles.statsRow}>
           {Object.entries(unit.table1).map(([type, value]) => {
             if (type === "repair") return null;
+            const rawVal = value[damage][0];
+            const mod = getHeatMod(type);
+            const displayVal = (mod !== 0 && typeof rawVal === "number")
+              ? rawVal + mod
+              : rawVal;
             return (
               <div className={styles.statCell} key={type}>
                 <img
@@ -240,7 +268,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
                 />
                 {alive ? (
                   <span className={`${styles.statValue} ${checkBackground(value[damage][1])}`}>
-                    {value[damage][0]}
+                    {displayVal}
                   </span>
                 ) : (
                   <span className={styles.statDead}>
@@ -260,6 +288,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
               return (
                 <details key={i} className={styles.rule}>
                   <summary className={styles.ruleSummary}>
+                    <img
+                      className={styles.ruleIcon}
+                      src={`/assets/icons/${iconFile(type)}.jpg`}
+                      alt={bt}
+                      onError={(e) => { e.target.style.visibility = "hidden"; }}
+                    />
                     <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
                     {rules.damage[bt][ruleCode.slice(0, -1)].name}
                   </summary>
@@ -279,7 +313,20 @@ export default function UnitCard({ unit, expandUnit, index }) {
             <div className={styles.actionBtns}>
               <button className={`${styles.btn} ${styles.btnHeat}`} onClick={takeHeat}>+ Heat</button>
               <button className={`${styles.btn} ${styles.btnVent}`} onClick={vent}>↓ Vent</button>
+              <button className={`${styles.btn} ${styles.btnCool}`} onClick={coolOne}>Cool 1</button>
             </div>
+          </div>
+
+          {/* Heat modifier toggle */}
+          <div className={styles.heatModRow}>
+            <span className={styles.heatModLabel}>Apply heat modifiers to damage stats</span>
+            <button
+              className={`${styles.heatModToggle} ${applyHeatMods ? styles.heatModOn : styles.heatModOff}`}
+              onClick={() => setApplyHeatMods((v) => !v)}
+              aria-pressed={applyHeatMods}
+            >
+              {applyHeatMods ? "ON" : "OFF"}
+            </button>
           </div>
 
           <div className={styles.statsRow}>
@@ -304,6 +351,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
                 return (
                   <details key={i} className={styles.rule}>
                     <summary className={styles.ruleSummary}>
+                      <img
+                        className={styles.ruleIcon}
+                        src={`/assets/icons/${iconFile(type)}.jpg`}
+                        alt={bt}
+                        onError={(e) => { e.target.style.visibility = "hidden"; }}
+                      />
                       <span className={`${styles.ruleColor} ${checkBackground(ruleCode)}`} />
                       {rules.heat[bt][ruleCode.slice(0, -1)].name}
                     </summary>

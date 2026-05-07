@@ -295,6 +295,47 @@
   color: white;
 }
 
+.btnCool {
+  background: #5a7a9a;
+  color: white;
+}
+
+/* ── Heat modifier toggle ── */
+.heatModRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.heatModLabel {
+  font-size: 0.72rem;
+  color: #888;
+  flex: 1;
+}
+
+.heatModToggle {
+  padding: 3px 10px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.heatModOn {
+  background: #d97a28;
+  color: white;
+}
+
+.heatModOff {
+  background: #ccc;
+  color: #555;
+}
+
 /* ── Stats row ── */
 .statsRow {
   display: flex;
@@ -383,6 +424,13 @@
 
 details[open] .ruleSummary::after {
   content: "‹";
+}
+
+.ruleIcon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .ruleColor {

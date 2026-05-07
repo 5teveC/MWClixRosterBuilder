@@ -42,10 +42,11 @@ export default function UnitCard({ unit, expandUnit, index }) {
   // is a numeric modifier (e.g. "-1"). We only apply numeric deltas.
   const getHeatMod = (type) => {
     if (!applyHeatMods || !unit.heat) return 0;
-    const bt = baseType(type);
-    if (!unit.heat[bt]) return 0;
+    // Prefer exact key (handles ballisticDamage2 etc.), fall back to stripped base
+    const key = unit.heat[type] !== undefined ? type : baseType(type);
+    if (!unit.heat[key]) return 0;
     if (currentHeat >= heatTableLength(unit.heat)) return 0;
-    const entry = unit.heat[bt][currentHeat];
+    const entry = unit.heat[key][currentHeat];
     if (!entry) return 0;
     const delta = Number(entry[0]);
     return isNaN(delta) ? 0 : delta;

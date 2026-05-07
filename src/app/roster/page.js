@@ -42,6 +42,17 @@ const ALL_UNITS = [
 
 const UNIT_TYPES = ["Mech", "Vehicle", "Infantry"];
 
+const PRECON_FORCES = [
+  {
+    name: "Starter Force 1",
+    codes: ["AOD125", "AOD126", "AOD127", "AOD131", "AOD134"],
+  },
+  {
+    name: "Starter Force 2",
+    codes: ["AOD128", "AOD129", "AOD130", "AOD132", "AOD133"],
+  },
+];
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -51,6 +62,8 @@ export default function Roster() {
   const [gamePoints, setGamePoints] = useState(500);
   const [selectedFactions, setSelectedFactions] = useState(new Set());
   const [selectedTypes, setSelectedTypes] = useState(new Set());
+  const [selectedPrecon, setSelectedPrecon] = useState(null);
+  const [selectedOwned, setSelectedOwned] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [clearConfirm, setClearConfirm] = useState(false);
@@ -67,14 +80,26 @@ export default function Roster() {
     });
   };
 
+  const togglePrecon = (index) => {
+    setSelectedPrecon((prev) => (prev === index ? null : index));
+  };
+
   const filteredUnits = useMemo(() => {
     return ALL_UNITS.filter((unit) => {
-      if (selectedFactions.size > 0 && !selectedFactions.has(unit.faction)) return false;
-      if (selectedTypes.size > 0 && !selectedTypes.has(unit.type)) return false;
+      // Precon overrides faction and type filters
+      if (selectedPrecon !== null) {
+        if (!PRECON_FORCES[selectedPrecon].codes.includes(unit.code)) return false;
+      } else {
+        if (selectedFactions.size > 0 && !selectedFactions.has(unit.faction)) return false;
+        if (selectedTypes.size > 0 && !selectedTypes.has(unit.type)) return false;
+      }
+      // Owned filter (unit.owned will be set in a future build)
+      if (selectedOwned === "owned" && !unit.owned) return false;
+      // Search always applies
       if (search && !unit.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [selectedFactions, selectedTypes, search]);
+  }, [selectedFactions, selectedTypes, selectedPrecon, selectedOwned, search]);
 
   const addUnit = (unit) => {
     const addedUnit = { ...unit, id: Date.now() };
@@ -94,7 +119,11 @@ export default function Roster() {
     }
   };
 
-  const activeFilterCount = selectedFactions.size + selectedTypes.size;
+  const activeFilterCount =
+    selectedFactions.size +
+    selectedTypes.size +
+    (selectedPrecon !== null ? 1 : 0) +
+    (selectedOwned === "owned" ? 1 : 0);
 
   return (
     <div className={styles.page}>
@@ -140,6 +169,24 @@ export default function Roster() {
 
         {filtersOpen && (
           <div className={styles.filterPanel}>
+
+            {/* ── Precon Forces ── */}
+            <div className={styles.filterSection}>
+              <p className={styles.filterLabel}>Precon Forces</p>
+              <div className={styles.filterChips}>
+                {PRECON_FORCES.map((force, i) => (
+                  <button
+                    key={force.name}
+                    className={`${styles.chip} ${selectedPrecon === i ? styles.chipActive : ""}`}
+                    onClick={() => togglePrecon(i)}
+                  >
+                    {force.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Unit Type ── */}
             <div className={styles.filterSection}>
               <p className={styles.filterLabel}>Unit Type</p>
               <div className={styles.filterChips}>
@@ -154,6 +201,8 @@ export default function Roster() {
                 ))}
               </div>
             </div>
+
+            {/* ── Faction ── */}
             <div className={styles.filterSection}>
               <div className={styles.filterLabelRow}>
                 <p className={styles.filterLabel}>Faction</p>
@@ -184,7 +233,6 @@ export default function Roster() {
                   ))}
                 </div>
               )}
-
               <div className={styles.filterChips}>
                 {ALL_FACTIONS.map((faction) => (
                   <button
@@ -197,10 +245,32 @@ export default function Roster() {
                 ))}
               </div>
             </div>
+
+            {/* ── Owned / All ── */}
+            <div className={styles.filterSection}>
+              <p className={styles.filterLabel}>Collection</p>
+              <div className={styles.filterChips}>
+                {["all", "owned"].map((opt) => (
+                  <button
+                    key={opt}
+                    className={`${styles.chip} ${selectedOwned === opt ? styles.chipActive : ""}`}
+                    onClick={() => setSelectedOwned(opt)}
+                  >
+                    {opt === "all" ? "All" : "Owned"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {activeFilterCount > 0 && (
               <button
                 className={styles.clearFilters}
-                onClick={() => { setSelectedFactions(new Set()); setSelectedTypes(new Set()); }}
+                onClick={() => {
+                  setSelectedFactions(new Set());
+                  setSelectedTypes(new Set());
+                  setSelectedPrecon(null);
+                  setSelectedOwned("all");
+                }}
               >
                 Clear all filters
               </button>
@@ -237,10 +307,9 @@ export default function Roster() {
         ))}
       </main>
 
-      {/* ── Sticky Footer (always-visible roster + actions) ── */}
+      {/* ── Sticky Footer ── */}
       <footer className={styles.footer}>
 
-        {/* Roster list */}
         <div className={styles.footerRosterHeader}>
           <span className={styles.footerRosterLabel}>Your Roster</span>
           {roster.length > 0 && (
@@ -272,7 +341,6 @@ export default function Roster() {
           <p className={styles.overWarning}>⚠ Over by {rosterPoints - gamePoints} pts</p>
         )}
 
-        {/* Points + Play row */}
         <div className={styles.footerActions}>
           <div className={styles.footerPoints}>
             <span className={isOverPoints ? styles.overPoints : styles.underPoints}>

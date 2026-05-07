@@ -14,9 +14,15 @@ export default function Game() {
     setRoster([...roster]);
   };
 
+  const heatTableLength = (heat) => {
+    if (!heat) return 0;
+    const speedKey = Object.keys(heat).find((k) => k.endsWith("Speed"));
+    return speedKey ? heat[speedKey].length : 0;
+  };
+
   const getStatus = (unit) => {
     if (!unit.alive) return { label: "Destroyed", cls: styles.statusDead };
-    if (unit.heat && unit.currentHeat > unit.heat.mechSpeed.length - 1)
+    if (unit.heat && unit.currentHeat > heatTableLength(unit.heat) - 1)
       return { label: "Shutdown", cls: styles.statusShutdown };
     return null;
   };

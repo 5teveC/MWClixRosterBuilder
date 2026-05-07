@@ -7,6 +7,14 @@ import rules from "../../data/rules";
 // Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
 
+// Find the length of the heat table using whichever speed key is present
+// (mechs use mechSpeed, vehicles use trackedSpeed, hoverSpeed, etc.)
+const heatTableLength = (heat) => {
+  if (!heat) return 0;
+  const speedKey = Object.keys(heat).find((k) => k.endsWith("Speed"));
+  return speedKey ? heat[speedKey].length : 0;
+};
+
 export default function UnitCard({ unit, expandUnit, index }) {
   const { roster, setRoster } = useRoster();
   const [damage, setDamage] = useState(unit.damage || 0);
@@ -25,14 +33,14 @@ export default function UnitCard({ unit, expandUnit, index }) {
 
   const rulesList = Object.entries(unit.table1)
     .filter(([type]) => type !== "repair")
-    .map(([type, value]) => [value[damage][1], type])
+    .map(([type, value]) => [value[damage]?.[1], type])
     .filter(([ruleCode]) => ruleCode);
 
   const getHeatRulesList = () => {
     if (unit.heat) {
-      if (currentHeat < unit.heat.mechSpeed.length) {
+      if (currentHeat < heatTableLength(unit.heat)) {
         return Object.entries(unit.heat)
-          .map(([type, value]) => [value[currentHeat][1], type])
+          .map(([type, value]) => [value[currentHeat]?.[1], type])
           .filter(([ruleCode]) => ruleCode);
       }
       return [];
@@ -44,7 +52,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
     if (damage < unit.table1.attack.length - 1) {
       setDamage((prev) => prev + 1);
       roster[index].damage = damage + 1;
-      if (unit.table1.repair[damage + 1][1] === "black") {
+      if (unit.table1.repair[damage + 1]?.[1] === "black") {
         setRepairCap(damage + 1);
         roster[index].repairCap = damage + 1;
       }
@@ -105,7 +113,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
           <img src="/assets/icons/bullets.jpg" alt="destroyed" />
         </span>
       );
-    } else if (currentHeat > unit.heat.mechSpeed.length - 1) {
+    } else if (currentHeat > heatTableLength(unit.heat) - 1) {
       return (
         <span className={styles.statDead}>
           <img src="/assets/icons/Shutdown.gif" alt="shutdown" />
@@ -120,7 +128,7 @@ export default function UnitCard({ unit, expandUnit, index }) {
   };
 
   const heatRulesList = getHeatRulesList();
-  const isShutdown = unit.heat && currentHeat > unit.heat.mechSpeed.length - 1;
+  const isShutdown = unit.heat && currentHeat > heatTableLength(unit.heat) - 1;
 
   return (
     <div className={`${styles.card} ${!alive ? styles.cardDead : ""}`}>

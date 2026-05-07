@@ -63,7 +63,7 @@ export default function Roster() {
   const [selectedFactions, setSelectedFactions] = useState(new Set());
   const [selectedTypes, setSelectedTypes] = useState(new Set());
   const [selectedPrecon, setSelectedPrecon] = useState(null);
-  const [selectedOwned, setSelectedOwned] = useState("all");
+  const [selectedOwned, setSelectedOwned] = useState("owned");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [clearConfirm, setClearConfirm] = useState(false);

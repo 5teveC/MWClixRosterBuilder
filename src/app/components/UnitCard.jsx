@@ -28,6 +28,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
   const [artilleryOpen, setArtilleryOpen] = useState(false);
   const [applyHeatMods, setApplyHeatMods] = useState(true);
 
+  const vibrate = (pattern) => navigator?.vibrate?.(pattern);
+
   const addToast = (msg, variant) => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, msg, variant }]);
@@ -77,10 +79,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
         setRepairCap(damage + 1);
         roster[index].repairCap = damage + 1;
       }
+      vibrate(25);
       addToast("Damage", "damage");
     } else {
       setAlive(false);
       roster[index].alive = false;
+      vibrate([100, 60, 150, 60, 200]);
       addToast("Destroyed!", "damage");
     }
   };
@@ -95,8 +99,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
 
   const takeHeat = () => {
     if (currentHeat < 5) {
-      setCurrentHeat((prev) => prev + 1);
-      roster[index].currentHeat = currentHeat + 1;
+      const nextHeat = currentHeat + 1;
+      setCurrentHeat(nextHeat);
+      roster[index].currentHeat = nextHeat;
+      if (unit.heat && nextHeat > heatTableLength(unit.heat) - 1) {
+        vibrate([80, 50, 80]);
+      }
       addToast("Heat", "heat");
     }
   };

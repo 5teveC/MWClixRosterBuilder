@@ -405,10 +405,23 @@
 
 .footerRosterItem {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rosterItemMain {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rosterItemRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .rosterName {
@@ -426,6 +439,41 @@
   min-width: 30px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.gearBtn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #888;
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.5;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gearBtnActive {
+  background: rgba(197, 160, 40, 0.18);
+  border-color: rgba(197, 160, 40, 0.5);
+  color: #c5a028;
+}
+
+.rosterGearRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 2px;
+}
+
+.rosterGearChip {
+  font-size: 0.64rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  background: rgba(197, 160, 40, 0.85);
+  padding: 2px 7px;
+  border-radius: 10px;
 }
 
 .removeBtn {
@@ -505,4 +553,308 @@
 .playBtnDisabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+/* ── Gear picker overlay ── */
+.gearOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.gearPanel {
+  background: #1a1a2e;
+  width: 100%;
+  max-width: 680px;
+  height: 90dvh;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gearPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.gearPanelTitle {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #e0d7c6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gearCloseBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.gearCloseBtn:hover {
+  color: #e05c5c;
+}
+
+/* Gear slots (2 side-by-side) */
+.gearSlots {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.gearSlot {
+  flex: 1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gearSlotFilled {
+  background: rgba(197, 160, 40, 0.1);
+  border: 1px solid rgba(197, 160, 40, 0.35);
+}
+
+.gearSlotEmpty {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  justify-content: center;
+}
+
+.gearSlotEmptyText {
+  font-size: 0.75rem;
+  color: #444;
+  font-style: italic;
+}
+
+.gearSlotImg {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #333;
+}
+
+.gearSlotName {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #e0d7c6;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gearSlotPts {
+  font-size: 0.7rem;
+  color: #c5a028;
+  flex-shrink: 0;
+}
+
+.gearSlotRemove {
+  background: transparent;
+  border: none;
+  color: #e05c5c;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Class filter row */
+.gearClassFilter {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gearClassChip {
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #aaa;
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: "Georgia", serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gearClassChipActive {
+  background: #c5a028;
+  border-color: #c5a028;
+  color: #1a1a2e;
+  font-weight: bold;
+}
+
+/* Gear list */
+.gearList {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gearCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.gearCardEquipped {
+  background: rgba(197, 160, 40, 0.1);
+  border-color: rgba(197, 160, 40, 0.4);
+}
+
+.gearCardTop {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.gearCardImg {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #2a2a50;
+}
+
+.gearCardInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gearCardName {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #e0d7c6;
+  line-height: 1.2;
+}
+
+.gearCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.gearCardClass {
+  font-size: 0.64rem;
+  font-weight: bold;
+  background: #2a2a50;
+  color: #aaa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gearCardAttaches {
+  font-size: 0.64rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: #888;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.gearCardSE {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  background: #c5a028;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.gearCardSECircle {
+  border-radius: 20px;
+}
+
+.gearCardFaction {
+  font-size: 0.7rem;
+  color: #c5a028;
+  font-style: italic;
+}
+
+.gearCardActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gearCardPts {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #c5a028;
+  white-space: nowrap;
+}
+
+.gearEquipBtn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: #27875a;
+  color: white;
+  white-space: nowrap;
+  font-family: "Georgia", serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gearEquipBtn:disabled {
+  background: #2a2a3a;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.gearEquipBtnActive {
+  background: #c0392b;
+  color: white;
+}
+
+.gearCardText {
+  font-size: 0.78rem;
+  color: #888;
+  line-height: 1.55;
+  margin: 8px 0 0 0;
 }

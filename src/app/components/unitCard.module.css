@@ -470,6 +470,23 @@ details[open] .ruleSummary::after {
   border-top: 1px solid #e8e5e0;
 }
 
+/* ── Gear SE badge (in game screen gear section) ── */
+.gearSEBadge {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  background: #c5a028;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.gearSEBadgeCircle {
+  border-radius: 20px;
+}
+
 /* ── Stat icon clickable ── */
 .statIconClickable {
   cursor: pointer;

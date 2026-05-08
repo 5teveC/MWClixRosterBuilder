@@ -2,6 +2,7 @@
 
 import styles from "./roster.module.css";
 import units from "../../data/units";
+import gearData from "../../data/gear";
 import { useRoster } from "@/context/RosterContext";
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -53,6 +54,13 @@ const PRECON_FORCES = [
   },
 ];
 
+const GEAR_CLASS_OPTIONS = ["All", "Light", "Medium", "Heavy", "Assault"];
+
+const parseGearSE = (effectText) => {
+  const m = effectText.match(/Provides (Square|Circle) (.+?) SE/);
+  return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
+};
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -69,8 +77,57 @@ export default function Roster() {
   const [clearConfirm, setClearConfirm] = useState(false);
   const [factionInfoOpen, setFactionInfoOpen] = useState(false);
 
-  const rosterPoints = roster.reduce((sum, u) => sum + u.points, 0);
+  // Gear picker state
+  const [gearPickerUnitId, setGearPickerUnitId] = useState(null);
+  const [gearClassFilter, setGearClassFilter] = useState("All");
+
+  // ---------------------------------------------------------------------------
+  // Gear helpers
+  // ---------------------------------------------------------------------------
+
+  const gearPointsFor = (unit) =>
+    (unit.gear || []).reduce((sum, gId) => sum + (gearData[gId]?.points || 0), 0);
+
+  const totalPtsFor = (unit) => unit.points + gearPointsFor(unit);
+
+  const gearPickerUnit = gearPickerUnitId
+    ? roster.find((u) => u.id === gearPickerUnitId)
+    : null;
+
+  const filteredGear = useMemo(
+    () =>
+      Object.values(gearData).filter(
+        (g) => gearClassFilter === "All" || g.classReq === gearClassFilter
+      ),
+    [gearClassFilter]
+  );
+
+  const assignGear = (gearId) => {
+    const unit = roster.find((u) => u.id === gearPickerUnitId);
+    if (!unit) return;
+    const cur = unit.gear || [];
+    if (cur.length >= 2 || cur.includes(gearId)) return;
+    unit.gear = [...cur, gearId];
+    setRoster([...roster]);
+  };
+
+  const unequipGear = (gearId) => {
+    const unit = roster.find((u) => u.id === gearPickerUnitId);
+    if (!unit) return;
+    unit.gear = (unit.gear || []).filter((g) => g !== gearId);
+    setRoster([...roster]);
+  };
+
+  // ---------------------------------------------------------------------------
+  // Points
+  // ---------------------------------------------------------------------------
+
+  const rosterPoints = roster.reduce((sum, u) => sum + totalPtsFor(u), 0);
   const isOverPoints = rosterPoints > gamePoints;
+
+  // ---------------------------------------------------------------------------
+  // Filters
+  // ---------------------------------------------------------------------------
 
   const toggleSet = (setter, value) => {
     setter((prev) => {
@@ -86,16 +143,13 @@ export default function Roster() {
 
   const filteredUnits = useMemo(() => {
     return ALL_UNITS.filter((unit) => {
-      // Precon overrides faction and type filters
       if (selectedPrecon !== null) {
         if (!PRECON_FORCES[selectedPrecon].codes.includes(unit.code)) return false;
       } else {
         if (selectedFactions.size > 0 && !selectedFactions.has(unit.faction)) return false;
         if (selectedTypes.size > 0 && !selectedTypes.has(unit.type)) return false;
       }
-      // Owned filter (unit.owned will be set in a future build)
       if (selectedOwned === "owned" && !unit.owned) return false;
-      // Search always applies
       if (search && !unit.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
@@ -329,9 +383,31 @@ export default function Roster() {
           <ul className={styles.footerRosterList}>
             {roster.map((unit) => (
               <li key={unit.id} className={styles.footerRosterItem}>
-                <span className={styles.rosterName}>{unit.name}</span>
-                <span className={styles.rosterPoints}>{unit.points}</span>
-                <button className={styles.removeBtn} onClick={() => removeUnit(unit.id)}>✕</button>
+                <div className={styles.rosterItemMain}>
+                  <span className={styles.rosterName}>{unit.name}</span>
+                  <div className={styles.rosterItemRight}>
+                    <span className={styles.rosterPoints}>{totalPtsFor(unit)}</span>
+                    {unit.category === "mechs" && (
+                      <button
+                        className={`${styles.gearBtn} ${unit.gear?.length ? styles.gearBtnActive : ""}`}
+                        onClick={() => { setGearPickerUnitId(unit.id); setGearClassFilter("All"); }}
+                        aria-label="Manage gear"
+                      >
+                        ⚙{unit.gear?.length ? ` ${unit.gear.length}/2` : ""}
+                      </button>
+                    )}
+                    <button className={styles.removeBtn} onClick={() => removeUnit(unit.id)}>✕</button>
+                  </div>
+                </div>
+                {unit.gear?.length > 0 && (
+                  <div className={styles.rosterGearRow}>
+                    {unit.gear.map((gId) => (
+                      <span key={gId} className={styles.rosterGearChip}>
+                        {gearData[gId]?.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -358,6 +434,115 @@ export default function Roster() {
         </div>
 
       </footer>
+
+      {/* ── Gear picker overlay ── */}
+      {gearPickerUnit && (
+        <div className={styles.gearOverlay} onClick={() => setGearPickerUnitId(null)}>
+          <div className={styles.gearPanel} onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className={styles.gearPanelHeader}>
+              <span className={styles.gearPanelTitle}>Gear — {gearPickerUnit.name}</span>
+              <button className={styles.gearCloseBtn} onClick={() => setGearPickerUnitId(null)}>✕</button>
+            </div>
+
+            {/* Gear slots */}
+            <div className={styles.gearSlots}>
+              {[0, 1].map((slot) => {
+                const gId = (gearPickerUnit.gear || [])[slot];
+                const g = gId ? gearData[gId] : null;
+                return (
+                  <div
+                    key={slot}
+                    className={`${styles.gearSlot} ${g ? styles.gearSlotFilled : styles.gearSlotEmpty}`}
+                  >
+                    {g ? (
+                      <>
+                        <img
+                          className={styles.gearSlotImg}
+                          src={`/assets/gear/${gId}.jpg`}
+                          alt={g.name}
+                          onError={(e) => { e.target.style.visibility = "hidden"; }}
+                        />
+                        <span className={styles.gearSlotName}>{g.name}</span>
+                        <span className={styles.gearSlotPts}>{g.points}pts</span>
+                        <button className={styles.gearSlotRemove} onClick={() => unequipGear(gId)}>✕</button>
+                      </>
+                    ) : (
+                      <span className={styles.gearSlotEmptyText}>Slot {slot + 1} — Empty</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Class filter */}
+            <div className={styles.gearClassFilter}>
+              {GEAR_CLASS_OPTIONS.map((cls) => (
+                <button
+                  key={cls}
+                  className={`${styles.gearClassChip} ${gearClassFilter === cls ? styles.gearClassChipActive : ""}`}
+                  onClick={() => setGearClassFilter(cls)}
+                >
+                  {cls}
+                </button>
+              ))}
+            </div>
+
+            {/* Gear list */}
+            <div className={styles.gearList}>
+              {filteredGear.map((g) => {
+                const { seShape, seName } = parseGearSE(g.effectText);
+                const equipped = (gearPickerUnit.gear || []).includes(g.wId);
+                const full = (gearPickerUnit.gear || []).length >= 2;
+                return (
+                  <div
+                    key={g.wId}
+                    className={`${styles.gearCard} ${equipped ? styles.gearCardEquipped : ""}`}
+                  >
+                    <div className={styles.gearCardTop}>
+                      <img
+                        className={styles.gearCardImg}
+                        src={`/assets/gear/${g.wId}.jpg`}
+                        alt={g.name}
+                        onError={(e) => { e.target.style.visibility = "hidden"; }}
+                      />
+                      <div className={styles.gearCardInfo}>
+                        <span className={styles.gearCardName}>{g.name}</span>
+                        <div className={styles.gearCardMeta}>
+                          <span className={styles.gearCardClass}>{g.classReq}</span>
+                          <span className={styles.gearCardAttaches}>{g.attachesTo}</span>
+                          {seShape && (
+                            <span className={`${styles.gearCardSE} ${seShape === "circle" ? styles.gearCardSECircle : ""}`}>
+                              {seShape === "square" ? "■" : "●"} {seName}
+                            </span>
+                          )}
+                        </div>
+                        {g.faction !== "All" && (
+                          <span className={styles.gearCardFaction}>{g.faction} only</span>
+                        )}
+                      </div>
+                      <div className={styles.gearCardActions}>
+                        <span className={styles.gearCardPts}>{g.points}pts</span>
+                        <button
+                          className={`${styles.gearEquipBtn} ${equipped ? styles.gearEquipBtnActive : ""}`}
+                          disabled={!equipped && full}
+                          onClick={() => (equipped ? unequipGear(g.wId) : assignGear(g.wId))}
+                        >
+                          {equipped ? "Remove" : "Equip"}
+                        </button>
+                      </div>
+                    </div>
+                    <p className={styles.gearCardText}>{g.effectText}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

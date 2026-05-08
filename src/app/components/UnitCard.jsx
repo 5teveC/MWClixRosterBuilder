@@ -4,6 +4,12 @@ import { useState } from "react";
 import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
 import STAT_INFO from "../../data/statInfo";
+import GEAR_DATA from "../../data/gear";
+
+const parseGearSE = (effectText) => {
+  const m = effectText.match(/Provides (Square|Circle) (.+?) SE/);
+  return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
+};
 
 // Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
@@ -416,6 +422,41 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Gear section ── */}
+      {unit.gear?.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionLabel}>Gear</span>
+          </div>
+          <div className={styles.rulesSection}>
+            {unit.gear.map((gearId) => {
+              const g = GEAR_DATA[gearId];
+              if (!g) return null;
+              const { seShape, seName } = parseGearSE(g.effectText);
+              return (
+                <details key={gearId} className={styles.rule}>
+                  <summary className={styles.ruleSummary}>
+                    <img
+                      className={styles.ruleIcon}
+                      src={`/assets/gear/${gearId}.jpg`}
+                      alt={g.name}
+                      onError={(e) => { e.target.style.visibility = "hidden"; }}
+                    />
+                    {seShape && (
+                      <span className={`${styles.gearSEBadge} ${seShape === "circle" ? styles.gearSEBadgeCircle : ""}`}>
+                        {seShape === "square" ? "■" : "●"} {seName}
+                      </span>
+                    )}
+                    {g.name}
+                  </summary>
+                  <p className={styles.ruleText}>{g.effectText}</p>
+                </details>
+              );
+            })}
+          </div>
         </div>
       )}
 

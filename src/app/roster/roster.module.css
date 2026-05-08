@@ -85,6 +85,14 @@
   margin-left: 2px;
 }
 
+.activationsLabel {
+  font-size: 0.7rem;
+  color: #c5a028;
+  font-weight: bold;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
 .searchInput {
   width: 100%;
   box-sizing: border-box;
@@ -138,6 +146,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.filterToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .filterChevron {
@@ -446,7 +460,7 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #888;
   font-size: 0.7rem;
-  padding: 2px 7px;
+  padding: 2px 16px;
   border-radius: 4px;
   cursor: pointer;
   line-height: 1.5;

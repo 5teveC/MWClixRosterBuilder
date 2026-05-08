@@ -129,7 +129,7 @@ const DEFAULT_CONDITION = PLANETARY_CONDITIONS.find((c) => c.id === "AOD-PC-008"
 // ---------------------------------------------------------------------------
 
 export default function Game() {
-  const { roster, setRoster } = useRoster();
+  const { roster, setRoster, gamePoints } = useRoster();
   const [rulesOpen, setRulesOpen] = useState(false);
 
   // Planetary condition state
@@ -206,6 +206,7 @@ export default function Game() {
         <div className={styles.headerRow}>
           <h1 className={styles.title}>Battle</h1>
           <div className={styles.headerActions}>
+            <span className={styles.activationsDisplay}>{Math.floor((gamePoints || 300) / 150)} ACT</span>
             <button className={styles.rulesBtn} onClick={() => setRulesOpen(true)}>Rules</button>
             <Link href="/roster" className={styles.adjustLink}>← Roster</Link>
           </div>

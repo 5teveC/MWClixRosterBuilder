@@ -41,6 +41,13 @@
   gap: 8px;
 }
 
+.activationsDisplay {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #c5a028;
+  letter-spacing: 0.04em;
+}
+
 .rulesBtn {
   font-size: 0.82rem;
   color: #e0d7c6;

@@ -248,6 +248,15 @@
   font-weight: bold;
   letter-spacing: 0.12em;
   padding: 5px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shutdownBanner:active {
+  background: #a8881f;
 }
 
 /* ── Sections (damage / heat) ── */

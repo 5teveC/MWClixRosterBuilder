@@ -1,6 +1,6 @@
 "use client";
 import { useRoster } from "@/context/RosterContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
 import STAT_INFO from "../../data/statInfo";
@@ -56,6 +56,16 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
   const [artilleryOpen, setArtilleryOpen] = useState(false);
   const [applyHeatMods, setApplyHeatMods] = useState(true);
   const [statInfoEntry, setStatInfoEntry] = useState(null);
+  const [shutdownStep, setShutdownStep] = useState(0); // 0=hidden, 1="Shutdown", 2="Restart?"
+
+  // Shutdown button lifecycle: appear on shutdown, dismiss when heat returns to 0
+  useEffect(() => {
+    if (currentHeat === 0) {
+      setShutdownStep(0);
+    } else if (unit.heat && currentHeat > heatTableLength(unit.heat) - 1 && shutdownStep === 0) {
+      setShutdownStep(1);
+    }
+  }, [currentHeat]);
 
   const vibrate = (pattern) => navigator?.vibrate?.(pattern);
 
@@ -346,7 +356,14 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
           <button className={styles.reviveBtn} onClick={revive}>Revive</button>
         </div>
       )}
-      {alive && isShutdown && <div className={styles.shutdownBanner}>SHUTDOWN</div>}
+      {alive && shutdownStep > 0 && (
+        <button
+          className={styles.shutdownBanner}
+          onClick={() => setShutdownStep(shutdownStep === 1 ? 2 : 0)}
+        >
+          {shutdownStep === 1 ? "SHUTDOWN" : "RESTART?"}
+        </button>
+      )}
 
       {/* ── Damage section ── */}
       <div className={styles.section}>

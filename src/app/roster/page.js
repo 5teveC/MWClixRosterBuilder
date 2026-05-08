@@ -82,8 +82,7 @@ const hasAttachType = (unit, attachesTo) => {
 // ---------------------------------------------------------------------------
 
 export default function Roster() {
-  const { roster, setRoster } = useRoster();
-  const [gamePoints, setGamePoints] = useState(500);
+  const { roster, setRoster, gamePoints, setGamePoints } = useRoster();
   const [selectedFactions, setSelectedFactions] = useState(new Set());
   const [selectedTypes, setSelectedTypes] = useState(new Set());
   const [selectedPrecon, setSelectedPrecon] = useState(null);
@@ -215,6 +214,7 @@ export default function Roster() {
               min={0}
             />
             <span className={styles.pointsLabel}>pts</span>
+            <span className={styles.activationsLabel}>{Math.floor(gamePoints / 150)} ACT</span>
           </div>
         </div>
 
@@ -230,10 +230,12 @@ export default function Roster() {
           className={styles.filterToggle}
           onClick={() => setFiltersOpen((v) => !v)}
         >
-          <span>Filters</span>
-          {activeFilterCount > 0 && (
-            <span className={styles.filterBadge}>{activeFilterCount}</span>
-          )}
+          <span className={styles.filterToggleLeft}>
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className={styles.filterBadge}>{activeFilterCount}</span>
+            )}
+          </span>
           <span className={styles.filterChevron}>{filtersOpen ? "▲" : "▼"}</span>
         </button>
 

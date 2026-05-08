@@ -11,6 +11,27 @@ const parseGearSE = (effectText) => {
   return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
 };
 
+// Maps gear SE name → the color key used in rules.damage[type]
+const SE_COLOR_MAP = {
+  "Pulse":                 "red",
+  "Evade":                 "red",
+  "Improved Targeting":    "blue",
+  "Decoy":                 "green",
+  "Full Strike":           "green",
+  "Agility":               "black",
+  "Armor Piercing":        "red",
+  "Reflective Armor":      "red",
+  "Heavy Armor":           "grey",
+  "Repair":                "green",
+  "Reactive Armor":        "blue",
+  "Electronic Camouflage": "black",
+  "Streak Missiles":       "black",
+  "Alpha Strike":          "black",
+  "Flamers":               "grey",
+  "Anti-Personnel":        "blue",
+  "Rapid Strike":          "blue",
+};
+
 // Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
 
@@ -84,6 +105,38 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
     .filter(([type]) => type !== "repair")
     .map(([type, value]) => [value[damage]?.[1], type])
     .filter(([ruleCode]) => ruleCode);
+
+  // Resolve gear attachesTo → actual table1 key
+  const getStatTypeForAttachesTo = (attachesTo) => {
+    const keys = Object.keys(unit.table1);
+    switch (attachesTo) {
+      case "Energy":    return keys.find((k) => k === "energyDamage") ?? keys.find((k) => k.startsWith("energyDamage")) ?? null;
+      case "Ballistic": return keys.find((k) => k === "ballisticDamage") ?? keys.find((k) => k.startsWith("ballisticDamage")) ?? null;
+      case "Melee":     return keys.find((k) => k === "meleeDamage") ?? null;
+      case "Speed":     return keys.find((k) => k.endsWith("Speed")) ?? null;
+      case "Attack":    return keys.includes("attack") ? "attack" : null;
+      case "Defense":   return keys.includes("defense") ? "defense" : null;
+      case "Damage":    return keys.find((k) => k.endsWith("Damage") && !k.startsWith("melee")) ?? null;
+      default:          return null;
+    }
+  };
+
+  // Build extra rule entries from equipped gear that provide SE
+  const gearSERules = (unit.gear || []).flatMap((gearId) => {
+    const g = GEAR_DATA[gearId];
+    if (!g) return [];
+    const { seShape, seName } = parseGearSE(g.effectText);
+    if (!seShape || !seName) return [];
+    const color = SE_COLOR_MAP[seName];
+    if (!color) return [];
+    const statType = getStatTypeForAttachesTo(g.attachesTo);
+    if (!statType) return [];
+    const bt = baseType(statType);
+    if (!rules.damage[bt]?.[color]) return [];
+    return [[color + (seShape === "circle" ? "C" : "S"), statType]];
+  });
+
+  const allDamageRules = [...rulesList, ...gearSERules];
 
   const getHeatRulesList = () => {
     if (unit.heat) {
@@ -335,9 +388,9 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
           })}
         </div>
 
-        {rulesList.length > 0 && (
+        {allDamageRules.length > 0 && (
           <div className={styles.rulesSection}>
-            {rulesList.map(([ruleCode, type], i) => {
+            {allDamageRules.map(([ruleCode, type], i) => {
               const bt = baseType(type);
               if (!rules.damage[bt] || !rules.damage[bt][ruleCode.slice(0, -1)]) return null;
               return (
@@ -425,8 +478,8 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
         </div>
       )}
 
-      {/* ── Gear section ── */}
-      {unit.gear?.length > 0 && (
+      {/* ── Gear section (text-only gear with no SE — SE gear appears in the damage section above) ── */}
+      {unit.gear?.some((gId) => !parseGearSE(GEAR_DATA[gId]?.effectText || "").seShape) && (
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <span className={styles.sectionLabel}>Gear</span>
@@ -435,7 +488,8 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
             {unit.gear.map((gearId) => {
               const g = GEAR_DATA[gearId];
               if (!g) return null;
-              const { seShape, seName } = parseGearSE(g.effectText);
+              const { seShape } = parseGearSE(g.effectText);
+              if (seShape) return null; // SE gear is shown in damage section
               return (
                 <details key={gearId} className={styles.rule}>
                   <summary className={styles.ruleSummary}>
@@ -445,11 +499,6 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
                       alt={g.name}
                       onError={(e) => { e.target.style.visibility = "hidden"; }}
                     />
-                    {seShape && (
-                      <span className={`${styles.gearSEBadge} ${seShape === "circle" ? styles.gearSEBadgeCircle : ""}`}>
-                        {seShape === "square" ? "■" : "●"} {seName}
-                      </span>
-                    )}
                     {g.name}
                   </summary>
                   <p className={styles.ruleText}>{g.effectText}</p>

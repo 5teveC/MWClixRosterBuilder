@@ -3,6 +3,7 @@
 import styles from "./roster.module.css";
 import units from "../../data/units";
 import gearData from "../../data/gear";
+import mechClassMap from "../../data/mechClassMap";
 import { useRoster } from "@/context/RosterContext";
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -59,6 +60,21 @@ const GEAR_CLASS_OPTIONS = ["All", "Light", "Medium", "Heavy", "Assault"];
 const parseGearSE = (effectText) => {
   const m = effectText.match(/Provides (Square|Circle) (.+?) SE/);
   return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
+};
+
+const hasAttachType = (unit, attachesTo) => {
+  if (!unit?.table1) return false;
+  const keys = Object.keys(unit.table1);
+  switch (attachesTo) {
+    case "Energy":    return keys.some((k) => k.startsWith("energyDamage"));
+    case "Ballistic": return keys.some((k) => k.startsWith("ballisticDamage"));
+    case "Melee":     return keys.some((k) => k === "meleeDamage");
+    case "Speed":     return keys.some((k) => k.endsWith("Speed"));
+    case "Attack":    return keys.includes("attack");
+    case "Defense":   return keys.includes("defense");
+    case "Damage":    return keys.some((k) => k.endsWith("Damage") && !k.startsWith("melee"));
+    default:          return false;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -390,7 +406,10 @@ export default function Roster() {
                     {unit.category === "mechs" && (
                       <button
                         className={`${styles.gearBtn} ${unit.gear?.length ? styles.gearBtnActive : ""}`}
-                        onClick={() => { setGearPickerUnitId(unit.id); setGearClassFilter("All"); }}
+                        onClick={() => {
+                          setGearPickerUnitId(unit.id);
+                          setGearClassFilter(mechClassMap[unit.wId] || "All");
+                        }}
                         aria-label="Manage gear"
                       >
                         ⚙{unit.gear?.length ? ` ${unit.gear.length}/2` : ""}
@@ -436,112 +455,137 @@ export default function Roster() {
       </footer>
 
       {/* ── Gear picker overlay ── */}
-      {gearPickerUnit && (
-        <div className={styles.gearOverlay} onClick={() => setGearPickerUnitId(null)}>
-          <div className={styles.gearPanel} onClick={(e) => e.stopPropagation()}>
+      {gearPickerUnit && (() => {
+        const unitClass = mechClassMap[gearPickerUnit.wId];
+        return (
+          <div className={styles.gearOverlay} onClick={() => setGearPickerUnitId(null)}>
+            <div className={styles.gearPanel} onClick={(e) => e.stopPropagation()}>
 
-            {/* Header */}
-            <div className={styles.gearPanelHeader}>
-              <span className={styles.gearPanelTitle}>Gear — {gearPickerUnit.name}</span>
-              <button className={styles.gearCloseBtn} onClick={() => setGearPickerUnitId(null)}>✕</button>
-            </div>
+              {/* Header */}
+              <div className={styles.gearPanelHeader}>
+                <div className={styles.gearPanelTitleGroup}>
+                  <span className={styles.gearPanelTitle}>Gear — {gearPickerUnit.name}</span>
+                  {unitClass && <span className={styles.gearPanelClass}>{unitClass}</span>}
+                </div>
+                <button className={styles.gearCloseBtn} onClick={() => setGearPickerUnitId(null)}>✕</button>
+              </div>
 
-            {/* Gear slots */}
-            <div className={styles.gearSlots}>
-              {[0, 1].map((slot) => {
-                const gId = (gearPickerUnit.gear || [])[slot];
-                const g = gId ? gearData[gId] : null;
-                return (
-                  <div
-                    key={slot}
-                    className={`${styles.gearSlot} ${g ? styles.gearSlotFilled : styles.gearSlotEmpty}`}
-                  >
-                    {g ? (
-                      <>
-                        <img
-                          className={styles.gearSlotImg}
-                          src={`/assets/gear/${gId}.jpg`}
-                          alt={g.name}
-                          onError={(e) => { e.target.style.visibility = "hidden"; }}
-                        />
-                        <span className={styles.gearSlotName}>{g.name}</span>
-                        <span className={styles.gearSlotPts}>{g.points}pts</span>
-                        <button className={styles.gearSlotRemove} onClick={() => unequipGear(gId)}>✕</button>
-                      </>
-                    ) : (
-                      <span className={styles.gearSlotEmptyText}>Slot {slot + 1} — Empty</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Class filter */}
-            <div className={styles.gearClassFilter}>
-              {GEAR_CLASS_OPTIONS.map((cls) => (
-                <button
-                  key={cls}
-                  className={`${styles.gearClassChip} ${gearClassFilter === cls ? styles.gearClassChipActive : ""}`}
-                  onClick={() => setGearClassFilter(cls)}
-                >
-                  {cls}
-                </button>
-              ))}
-            </div>
-
-            {/* Gear list */}
-            <div className={styles.gearList}>
-              {filteredGear.map((g) => {
-                const { seShape, seName } = parseGearSE(g.effectText);
-                const equipped = (gearPickerUnit.gear || []).includes(g.wId);
-                const full = (gearPickerUnit.gear || []).length >= 2;
-                return (
-                  <div
-                    key={g.wId}
-                    className={`${styles.gearCard} ${equipped ? styles.gearCardEquipped : ""}`}
-                  >
-                    <div className={styles.gearCardTop}>
-                      <img
-                        className={styles.gearCardImg}
-                        src={`/assets/gear/${g.wId}.jpg`}
-                        alt={g.name}
-                        onError={(e) => { e.target.style.visibility = "hidden"; }}
-                      />
-                      <div className={styles.gearCardInfo}>
-                        <span className={styles.gearCardName}>{g.name}</span>
-                        <div className={styles.gearCardMeta}>
-                          <span className={styles.gearCardClass}>{g.classReq}</span>
-                          <span className={styles.gearCardAttaches}>{g.attachesTo}</span>
-                          {seShape && (
-                            <span className={`${styles.gearCardSE} ${seShape === "circle" ? styles.gearCardSECircle : ""}`}>
-                              {seShape === "square" ? "■" : "●"} {seName}
-                            </span>
+              {!unitClass ? (
+                <div className={styles.gearNoClass}>
+                  <p>No class assigned — this unit cannot equip gear.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Gear slots */}
+                  <div className={styles.gearSlots}>
+                    {[0, 1].map((slot) => {
+                      const gId = (gearPickerUnit.gear || [])[slot];
+                      const g = gId ? gearData[gId] : null;
+                      return (
+                        <div
+                          key={slot}
+                          className={`${styles.gearSlot} ${g ? styles.gearSlotFilled : styles.gearSlotEmpty}`}
+                        >
+                          {g ? (
+                            <>
+                              <img
+                                className={styles.gearSlotImg}
+                                src={`/assets/gear/${gId}.jpg`}
+                                alt={g.name}
+                                onError={(e) => { e.target.style.visibility = "hidden"; }}
+                              />
+                              <span className={styles.gearSlotName}>{g.name}</span>
+                              <span className={styles.gearSlotPts}>{g.points}pts</span>
+                              <button className={styles.gearSlotRemove} onClick={() => unequipGear(gId)}>✕</button>
+                            </>
+                          ) : (
+                            <span className={styles.gearSlotEmptyText}>Slot {slot + 1} — Empty</span>
                           )}
                         </div>
-                        {g.faction !== "All" && (
-                          <span className={styles.gearCardFaction}>{g.faction} only</span>
-                        )}
-                      </div>
-                      <div className={styles.gearCardActions}>
-                        <span className={styles.gearCardPts}>{g.points}pts</span>
-                        <button
-                          className={`${styles.gearEquipBtn} ${equipped ? styles.gearEquipBtnActive : ""}`}
-                          disabled={!equipped && full}
-                          onClick={() => (equipped ? unequipGear(g.wId) : assignGear(g.wId))}
-                        >
-                          {equipped ? "Remove" : "Equip"}
-                        </button>
-                      </div>
-                    </div>
-                    <p className={styles.gearCardText}>{g.effectText}</p>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
 
+                  {/* Class filter */}
+                  <div className={styles.gearClassFilter}>
+                    {GEAR_CLASS_OPTIONS.map((cls) => (
+                      <button
+                        key={cls}
+                        className={`${styles.gearClassChip} ${gearClassFilter === cls ? styles.gearClassChipActive : ""}`}
+                        onClick={() => setGearClassFilter(cls)}
+                      >
+                        {cls}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Gear list */}
+                  <div className={styles.gearList}>
+                    {filteredGear.map((g) => {
+                      const { seShape, seName } = parseGearSE(g.effectText);
+                      const equipped = (gearPickerUnit.gear || []).includes(g.wId);
+                      const full = (gearPickerUnit.gear || []).length >= 2;
+                      const wrongClass = g.classReq !== unitClass;
+                      const wrongAttach = !hasAttachType(gearPickerUnit, g.attachesTo);
+                      const canEquip = !wrongClass && !wrongAttach;
+                      const disabledReason = wrongClass
+                        ? `Requires ${g.classReq} mech`
+                        : wrongAttach
+                        ? `Requires ${g.attachesTo} stat`
+                        : null;
+                      return (
+                        <div
+                          key={g.wId}
+                          className={`${styles.gearCard} ${equipped ? styles.gearCardEquipped : ""} ${!canEquip && !equipped ? styles.gearCardDisabled : ""}`}
+                        >
+                          <div className={styles.gearCardTop}>
+                            <img
+                              className={styles.gearCardImg}
+                              src={`/assets/gear/${g.wId}.jpg`}
+                              alt={g.name}
+                              onError={(e) => { e.target.style.visibility = "hidden"; }}
+                            />
+                            <div className={styles.gearCardInfo}>
+                              <span className={styles.gearCardName}>{g.name}</span>
+                              <div className={styles.gearCardMeta}>
+                                <span className={styles.gearCardClass}>{g.classReq}</span>
+                                <span className={styles.gearCardAttaches}>{g.attachesTo}</span>
+                                {seShape && (
+                                  <span className={`${styles.gearCardSE} ${seShape === "circle" ? styles.gearCardSECircle : ""}`}>
+                                    {seShape === "square" ? "■" : "●"} {seName}
+                                  </span>
+                                )}
+                              </div>
+                              {g.faction !== "All" && (
+                                <span className={styles.gearCardFaction}>{g.faction} only</span>
+                              )}
+                            </div>
+                            <div className={styles.gearCardActions}>
+                              <span className={styles.gearCardPts}>{g.points}pts</span>
+                              <button
+                                className={`${styles.gearEquipBtn} ${equipped ? styles.gearEquipBtnActive : ""}`}
+                                disabled={!equipped && (full || !canEquip)}
+                                onClick={() => (equipped ? unequipGear(g.wId) : assignGear(g.wId))}
+                              >
+                                {equipped ? "Remove" : "Equip"}
+                              </button>
+                              {disabledReason && !equipped && (
+                                <span className={styles.gearDisabledReason}>{disabledReason}</span>
+                              )}
+                            </div>
+                          </div>
+                          <p className={styles.gearCardText}>{g.effectText}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );

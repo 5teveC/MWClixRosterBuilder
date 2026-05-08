@@ -586,12 +586,41 @@
   flex-shrink: 0;
 }
 
+.gearPanelTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .gearPanelTitle {
   font-size: 0.88rem;
   font-weight: bold;
   color: #e0d7c6;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.gearPanelClass {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  background: #c5a028;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gearNoClass {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  color: #555;
+  font-size: 0.88rem;
+  font-style: italic;
 }
 
 .gearCloseBtn {
@@ -850,6 +879,18 @@
 .gearEquipBtnActive {
   background: #c0392b;
   color: white;
+}
+
+.gearCardDisabled {
+  opacity: 0.45;
+}
+
+.gearDisabledReason {
+  font-size: 0.62rem;
+  color: #e05c5c;
+  text-align: right;
+  white-space: nowrap;
+  margin-top: 2px;
 }
 
 .gearCardText {

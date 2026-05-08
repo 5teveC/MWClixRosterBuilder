@@ -212,11 +212,32 @@
 .destroyedBanner {
   background: #e05c5c;
   color: white;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
   font-size: 0.85rem;
   font-weight: bold;
   letter-spacing: 0.12em;
-  padding: 5px;
+  padding: 6px 12px;
+}
+
+.reviveBtn {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  border-radius: 12px;
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reviveBtn:active {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .shutdownBanner {

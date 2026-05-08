@@ -18,7 +18,7 @@ const heatTableLength = (heat) => {
   return speedKey ? heat[speedKey].length : 0;
 };
 
-export default function UnitCard({ unit, expandUnit, index }) {
+export default function UnitCard({ unit, expandUnit, index, condition }) {
   const { roster, setRoster } = useRoster();
   const [damage, setDamage] = useState(unit.damage || 0);
   const [currentHeat, setCurrentHeat] = useState(unit.currentHeat || 0);
@@ -38,13 +38,29 @@ export default function UnitCard({ unit, expandUnit, index }) {
     }, 1100);
   };
 
-  // Returns the heat modifier for a given stat type at the current heat level.
-  // Heat table entries are [displayValue, colorCode]. For speed-type stats the
-  // displayed value IS the modified value (e.g. "4"), for damage-type stats it
-  // is a numeric modifier (e.g. "-1"). We only apply numeric deltas.
+  // ── Planetary condition helpers ────────────────────────────────────────────
+
+  // Dust Storm (AOD-PC-003): cap max range to 8
+  const applyDustStorm = (rangeStr) => {
+    if (condition?.id !== "AOD-PC-003" || !rangeStr) return rangeStr;
+    const [min, max] = rangeStr.split("/");
+    return parseInt(max) > 8 ? `${min}/8` : rangeStr;
+  };
+
+  // Swamp (AOD-PC-004): cap hoverSpeed / vtolSpeed display values to 8
+  const applySwamp = (type, val) => {
+    if (condition?.id !== "AOD-PC-004") return val;
+    const bt = baseType(type);
+    if (bt === "hoverSpeed" || bt === "vtolSpeed") {
+      return typeof val === "number" ? Math.min(val, 8) : val;
+    }
+    return val;
+  };
+
+  // ── Heat modifier helper ───────────────────────────────────────────────────
+
   const getHeatMod = (type) => {
     if (!applyHeatMods || !unit.heat) return 0;
-    // Prefer exact key (handles ballisticDamage2 etc.), fall back to stripped base
     const key = unit.heat[type] !== undefined ? type : baseType(type);
     if (!unit.heat[key]) return 0;
     if (currentHeat >= heatTableLength(unit.heat)) return 0;
@@ -53,6 +69,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
     const delta = Number(entry[0]);
     return isNaN(delta) ? 0 : delta;
   };
+
+  // ── Rules lists ───────────────────────────────────────────────────────────
 
   const rulesList = Object.entries(unit.table1)
     .filter(([type]) => type !== "repair")
@@ -70,6 +88,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
     }
     return [];
   };
+
+  // ── Actions ───────────────────────────────────────────────────────────────
 
   const takeDamage = () => {
     if (damage < unit.table1.attack.length - 1) {
@@ -95,6 +115,12 @@ export default function UnitCard({ unit, expandUnit, index }) {
       roster[index].damage = damage - 1;
       addToast("Repaired", "repair");
     }
+  };
+
+  const revive = () => {
+    setAlive(true);
+    roster[index].alive = true;
+    addToast("Revived!", "repair");
   };
 
   const takeHeat = () => {
@@ -128,6 +154,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
       addToast("Cooled", "vent");
     }
   };
+
+  // ── Display helpers ───────────────────────────────────────────────────────
 
   const checkBackground = (bgCode) => {
     if (!bgCode) return "";
@@ -195,10 +223,14 @@ export default function UnitCard({ unit, expandUnit, index }) {
           {unit.faction && <p className={styles.faction}>{unit.faction}</p>}
           <div className={styles.staticStats}>
             {unit.primary != null && (
-              <span className={styles.staticStat}>Primary: {unit.primary[0]} @ {unit.primary[1]}</span>
+              <span className={styles.staticStat}>
+                Primary: {unit.primary[0]} @ {applyDustStorm(unit.primary[1])}
+              </span>
             )}
             {unit.secondary && (
-              <span className={styles.staticStat}>Secondary: {unit.secondary[0]} @ {unit.secondary[1]}</span>
+              <span className={styles.staticStat}>
+                Secondary: {unit.secondary[0]} @ {applyDustStorm(unit.secondary[1])}
+              </span>
             )}
             {unit.vent && <span className={styles.staticStat}>Vent: {unit.vent}</span>}
             {unit.capacity !== undefined && unit.capacity !== 0 && (
@@ -246,7 +278,13 @@ export default function UnitCard({ unit, expandUnit, index }) {
         </div>
       )}
 
-      {!alive && <div className={styles.destroyedBanner}>DESTROYED</div>}
+      {/* ── Status banners ── */}
+      {!alive && (
+        <div className={styles.destroyedBanner}>
+          <span>DESTROYED</span>
+          <button className={styles.reviveBtn} onClick={revive}>Revive</button>
+        </div>
+      )}
       {alive && isShutdown && <div className={styles.shutdownBanner}>SHUTDOWN</div>}
 
       {/* ── Damage section ── */}
@@ -264,9 +302,8 @@ export default function UnitCard({ unit, expandUnit, index }) {
             if (type === "repair") return null;
             const rawVal = value[damage][0];
             const mod = getHeatMod(type);
-            const displayVal = (mod !== 0 && typeof rawVal === "number")
-              ? rawVal + mod
-              : rawVal;
+            let displayVal = (mod !== 0 && typeof rawVal === "number") ? rawVal + mod : rawVal;
+            displayVal = applySwamp(type, displayVal);
             return (
               <div className={styles.statCell} key={type}>
                 <img

@@ -3,8 +3,12 @@
 import styles from "./game.module.css";
 import { useRoster } from "@/context/RosterContext";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import UnitCard from "@/app/components/UnitCard";
+
+// ---------------------------------------------------------------------------
+// Rules data
+// ---------------------------------------------------------------------------
 
 const RULES_SECTIONS = [
   {
@@ -61,10 +65,120 @@ Breaking Formation: A unit may leave a Formation at any time during its movement
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Planetary conditions data
+// ---------------------------------------------------------------------------
+
+const PLANETARY_CONDITIONS = [
+  {
+    id: "AOD-PC-001",
+    name: "Ice Field",
+    text: "All water terrain features become clear terrain features instead. Only shutdown 'Mech units roll for heat effects when losing heat. At the beginning of each player's clean-up stage, that player rolls one six-sided die. If the result is 5 or 6, all 'Mechs lose 1 heat in addition to any other heat lost during the clean-up stage. Ice Field cancels the Storm and Swamp planetary conditions. It is canceled by the Desert Wasteland planetary condition.",
+  },
+  {
+    id: "AOD-PC-002",
+    name: "Desert Wasteland",
+    text: "Remove all water terrain features from the game. 'Mechs do not lose heat during their controllers' clean-up stages. Desert Wasteland cancels the Ice Field planetary condition. Desert Wasteland is canceled by the Storm and Swamp planetary conditions.",
+  },
+  {
+    id: "AOD-PC-003",
+    name: "Dust Storm",
+    text: "All units must be deployed at NOE level. No unit may move to cruising level or be at cruising level when an order resolves. No unit may make a charge or death from above special attack. Units with a maximum range value greater than 8 have a maximum range value of 8 instead. The line of fire to all artillery markers is blocked. Dust Storm cancels the Swamp planetary condition. Dust Storm is canceled by the Storm planetary condition.",
+  },
+  {
+    id: "AOD-PC-004",
+    name: "Swamp",
+    text: "All units without the Hover or VTOL speed mode that have a speed value greater than 8 have a speed value of 8 instead. Reduce the blast radius of all artillery markers by 1 inch, minimum 1 inch. Swamp cancels the Desert Wasteland planetary condition. Swamp is canceled by the Ice Field planetary condition.",
+  },
+  {
+    id: "AOD-PC-005",
+    name: "Storm",
+    text: "All non-blocking terrain features become shallow water terrain features instead. All units with a speed value greater than 10 that begin the turn at cruising level have a speed value of 10 instead. Storm cancels the Mountain Range planetary condition. Storm is canceled by the Ice Field planetary condition.",
+  },
+  {
+    id: "AOD-PC-006",
+    name: "Barrens",
+    text: "Remove all terrain features from the battlefield. Barrens is canceled by the Storm and Tornado planetary conditions.",
+  },
+  {
+    id: "AOD-PC-007",
+    name: "Mountain Range",
+    text: "All non-blocking terrain features become blocking terrain features. Mountain Range is cancelled by the Storm planetary condition.",
+  },
+  {
+    id: "AOD-PC-008",
+    name: "Perfect Day",
+    text: "Cancel one other planetary condition; if you do, cancel this Perfect Day.",
+  },
+  {
+    id: "AOD-PC-009",
+    name: "Active Volcanoes",
+    text: "At the beginning of each player's clean-up stage, that player rolls one six-sided die. On a result of 5 or 6, each player must deal 1 pushing damage to one of his or her units.",
+  },
+  {
+    id: "AOD-PC-010",
+    name: "Tornado",
+    text: "All blocking terrain features become hindering terrain features instead.",
+  },
+];
+
+const DEFAULT_CONDITION = PLANETARY_CONDITIONS.find((c) => c.id === "AOD-PC-008");
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export default function Game() {
   const { roster, setRoster } = useRoster();
   const [rulesOpen, setRulesOpen] = useState(false);
 
+  // Planetary condition state
+  const [condition, setCondition] = useState(DEFAULT_CONDITION);
+  const [conditionOpen, setConditionOpen] = useState(false);
+  const [conditionView, setConditionView] = useState("list"); // "list" | "rolling" | "detail"
+  const [detailCondition, setDetailCondition] = useState(null);
+  const [rollName, setRollName] = useState("");
+  const rollRef = useRef(null);
+
+  const openConditionOverlay = () => {
+    setConditionView("list");
+    setConditionOpen(true);
+  };
+
+  const closeConditionOverlay = () => {
+    if (rollRef.current) clearTimeout(rollRef.current);
+    setConditionOpen(false);
+  };
+
+  const selectCondition = (cond) => {
+    setCondition(cond);
+    setDetailCondition(cond);
+    setConditionView("detail");
+  };
+
+  const rollRandom = () => {
+    setConditionView("rolling");
+    const startTime = Date.now();
+    const duration = 2400;
+
+    const step = () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) {
+        const picked = PLANETARY_CONDITIONS[Math.floor(Math.random() * PLANETARY_CONDITIONS.length)];
+        setCondition(picked);
+        setDetailCondition(picked);
+        setConditionView("detail");
+        return;
+      }
+      setRollName(PLANETARY_CONDITIONS[Math.floor(Math.random() * PLANETARY_CONDITIONS.length)].name);
+      const interval = elapsed < 800 ? 80 : elapsed < 1500 ? 160 : elapsed < 2000 ? 300 : 450;
+      rollRef.current = setTimeout(step, interval);
+    };
+
+    rollRef.current = setTimeout(step, 80);
+  };
+
+  // Game utilities
   const expandUnit = (index) => () => {
     const unit = roster[index];
     unit.expanded = !unit.expanded;
@@ -84,20 +198,36 @@ export default function Game() {
     return null;
   };
 
+  const isPerfectDay = condition?.id === "AOD-PC-008";
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Battle</h1>
-        <div className={styles.headerActions}>
-          <button className={styles.rulesBtn} onClick={() => setRulesOpen(true)}>Rules</button>
-          <Link href="/roster" className={styles.adjustLink}>← Roster</Link>
+        <div className={styles.headerRow}>
+          <h1 className={styles.title}>Battle</h1>
+          <div className={styles.headerActions}>
+            <button className={styles.rulesBtn} onClick={() => setRulesOpen(true)}>Rules</button>
+            <Link href="/roster" className={styles.adjustLink}>← Roster</Link>
+          </div>
         </div>
+        <button
+          className={`${styles.conditionBtn} ${!isPerfectDay ? styles.conditionBtnActive : ""}`}
+          onClick={openConditionOverlay}
+        >
+          {condition?.name ?? "Perfect Day"}
+        </button>
       </header>
 
       <main className={styles.unitList}>
         {roster.map((unit, index) =>
           unit.expanded ? (
-            <UnitCard key={unit.id} unit={unit} expandUnit={expandUnit} index={index} />
+            <UnitCard
+              key={unit.id}
+              unit={unit}
+              expandUnit={expandUnit}
+              index={index}
+              condition={condition}
+            />
           ) : (
             <div
               key={unit.id}
@@ -150,6 +280,67 @@ export default function Game() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Planetary condition overlay ── */}
+      {conditionOpen && (
+        <div className={styles.conditionOverlay} onClick={closeConditionOverlay}>
+          <div className={styles.conditionPanel} onClick={(e) => e.stopPropagation()}>
+
+            {/* Panel header */}
+            <div className={styles.conditionPanelHeader}>
+              {conditionView === "detail" ? (
+                <button className={styles.conditionBackBtn} onClick={() => setConditionView("list")}>← Back</button>
+              ) : (
+                <span className={styles.conditionPanelTitle}>Planetary Conditions</span>
+              )}
+              <button className={styles.conditionCloseBtn} onClick={closeConditionOverlay}>✕</button>
+            </div>
+
+            {/* List view */}
+            {conditionView === "list" && (
+              <div className={styles.conditionBody}>
+                <button className={styles.rollBtn} onClick={rollRandom}>Roll Random</button>
+                <div className={styles.conditionGrid}>
+                  {PLANETARY_CONDITIONS.map((cond) => (
+                    <button
+                      key={cond.id}
+                      className={`${styles.conditionChip} ${condition?.id === cond.id ? styles.conditionChipActive : ""}`}
+                      onClick={() => selectCondition(cond)}
+                    >
+                      {cond.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Rolling view */}
+            {conditionView === "rolling" && (
+              <div className={styles.rollingBody}>
+                <p className={styles.rollingLabel}>Rolling...</p>
+                <div className={styles.rollingDisplay}>{rollName}</div>
+              </div>
+            )}
+
+            {/* Detail view */}
+            {conditionView === "detail" && detailCondition && (
+              <div className={styles.conditionDetailBody}>
+                <img
+                  className={styles.conditionImage}
+                  src={`/assets/planetary/${detailCondition.id}.jpg`}
+                  alt={detailCondition.name}
+                />
+                <div className={styles.conditionDetailInfo}>
+                  <p className={styles.conditionDetailId}>{detailCondition.id}</p>
+                  <h3 className={styles.conditionDetailName}>{detailCondition.name}</h3>
+                  <p className={styles.conditionDetailText}>{detailCondition.text}</p>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
 import STAT_INFO from "../../data/statInfo";
 import GEAR_DATA from "../../data/gear";
+import PILOT_DATA from "../../data/pilots";
 
 const parseGearSE = (effectText) => {
   const m = effectText.match(/Provides (Square|Circle) (.+?) SE/);
@@ -107,6 +108,19 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
     if (!entry) return 0;
     const delta = Number(entry[0]);
     return isNaN(delta) ? 0 : delta;
+  };
+
+  // ── Pilot stat modifier helper ────────────────────────────────────────────
+
+  const getPilotMod = (type) => {
+    if (!unit.pilot) return 0;
+    const p = PILOT_DATA[unit.pilot];
+    if (!p) return 0;
+    const bt = baseType(type);
+    if (bt.endsWith("Speed")) return p.speed || 0;
+    if (bt === "attack") return p.attack || 0;
+    if (bt === "defense") return p.defense || 0;
+    return 0;
   };
 
   // ── Rules lists ───────────────────────────────────────────────────────────
@@ -379,7 +393,7 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
           {Object.entries(unit.table1).map(([type, value]) => {
             if (type === "repair") return null;
             const rawVal = value[damage][0];
-            const mod = getHeatMod(type);
+            const mod = getHeatMod(type) + getPilotMod(type);
             let displayVal = (mod !== 0 && typeof rawVal === "number") ? rawVal + mod : rawVal;
             displayVal = applySwamp(type, displayVal);
             return (
@@ -495,18 +509,55 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
         </div>
       )}
 
-      {/* ── Gear section (text-only gear with no SE — SE gear appears in the damage section above) ── */}
-      {unit.gear?.some((gId) => !parseGearSE(GEAR_DATA[gId]?.effectText || "").seShape) && (
+      {/* ── Pilot + Gear section ── */}
+      {(unit.pilot || unit.gear?.some((gId) => !parseGearSE(GEAR_DATA[gId]?.effectText || "").seShape)) && (
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionLabel}>Gear</span>
+            <span className={styles.sectionLabel}>Loadout</span>
           </div>
           <div className={styles.rulesSection}>
-            {unit.gear.map((gearId) => {
+
+            {/* Pilot entry */}
+            {unit.pilot && (() => {
+              const p = PILOT_DATA[unit.pilot];
+              if (!p) return null;
+              const isPreferredMech = p.preferredMech === unit.wId;
+              const statParts = [
+                p.speed !== 0 ? `Speed ${p.speed > 0 ? "+" : ""}${p.speed}` : null,
+                p.attack !== 0 ? `Attack ${p.attack > 0 ? "+" : ""}${p.attack}` : null,
+                p.defense !== 0 ? `Defense ${p.defense > 0 ? "+" : ""}${p.defense}` : null,
+              ].filter(Boolean).join(", ");
+              return (
+                <details key="pilot" className={styles.rule}>
+                  <summary className={styles.ruleSummary}>
+                    <img
+                      className={styles.ruleIcon}
+                      src={`/assets/pilots/${p.wId}.jpg`}
+                      alt={p.name}
+                      onError={(e) => { e.target.style.visibility = "hidden"; }}
+                    />
+                    <span>{p.name}</span>
+                    {statParts && (
+                      <span className={styles.gearSEBadge} style={{ marginLeft: "auto", marginRight: "18px" }}>{statParts}</span>
+                    )}
+                  </summary>
+                  <p className={styles.ruleText}>
+                    {p.tier === "legendary" ? "Legendary Pilot" : "Pilot"}
+                    {p.faction !== "All" ? ` — ${p.faction}` : ""}
+                    {isPreferredMech && p.preferredMechAbility
+                      ? `\n\n★ Preferred Mech Ability:\n${p.preferredMechAbility}`
+                      : ""}
+                  </p>
+                </details>
+              );
+            })()}
+
+            {/* Text-only gear (SE gear appears in damage section) */}
+            {unit.gear?.map((gearId) => {
               const g = GEAR_DATA[gearId];
               if (!g) return null;
               const { seShape } = parseGearSE(g.effectText);
-              if (seShape) return null; // SE gear is shown in damage section
+              if (seShape) return null;
               return (
                 <details key={gearId} className={styles.rule}>
                   <summary className={styles.ruleSummary}>

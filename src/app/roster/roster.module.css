@@ -913,3 +913,98 @@
   line-height: 1.55;
   margin: 8px 0 0 0;
 }
+
+/* ── Pilot chip in roster footer ── */
+.rosterPilotChip {
+  background: rgba(197, 160, 40, 0.15);
+  border-color: rgba(197, 160, 40, 0.4);
+  color: #c5a028;
+}
+
+/* ── Pilot slot styling in the slots row ── */
+.pilotSlot {
+  border-style: dashed;
+}
+
+/* ── Picker tab toggle (Pilot / Gear) ── */
+.pickerTabRow {
+  display: flex;
+  border-bottom: 1px solid #e8e5e0;
+  flex-shrink: 0;
+}
+
+.pickerTab {
+  flex: 1;
+  padding: 10px;
+  background: #f5f3ef;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pickerTab:first-child {
+  border-right: 1px solid #e8e5e0;
+}
+
+.pickerTabActive {
+  background: white;
+  color: #1a1a2e;
+  border-bottom: 2px solid #c5a028;
+}
+
+/* ── Preferred pilot banner inside card ── */
+.pilotCardPreferred {
+  border: 1px solid #c5a028;
+  background: rgba(197, 160, 40, 0.04);
+}
+
+.pilotPreferredBanner {
+  background: #c5a028;
+  color: #1a1a2e;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  text-align: center;
+}
+
+/* ── Legendary badge ── */
+.pilotLegendaryBadge {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: white;
+  background: #7a3b8c;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Pilot stat modifiers badge ── */
+.pilotStatBadge {
+  font-size: 0.72rem;
+  font-weight: bold;
+  color: #2e6da4;
+  margin-top: 3px;
+  display: block;
+  letter-spacing: 0.03em;
+}
+
+/* ── Preferred mech cost star marker ── */
+.pilotPreferredCost {
+  color: #c5a028;
+}
+
+/* ── Preferred mech ability text (gold tint) ── */
+.pilotAbilityText {
+  color: #7a5c00 !important;
+  background: rgba(197, 160, 40, 0.06);
+  border-top: 1px solid rgba(197, 160, 40, 0.2);
+  padding: 8px 10px !important;
+  margin: 0 !important;
+  border-radius: 0 0 6px 6px;
+}

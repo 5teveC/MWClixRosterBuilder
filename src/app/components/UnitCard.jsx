@@ -3,6 +3,7 @@ import { useRoster } from "@/context/RosterContext";
 import { useState } from "react";
 import styles from "./unitCard.module.css";
 import rules from "../../data/rules";
+import STAT_INFO from "../../data/statInfo";
 
 // Strip trailing digits: "ballisticDamage2" → "ballisticDamage"
 const baseType = (type) => type.replace(/\d+$/, "");
@@ -27,6 +28,7 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
   const [toasts, setToasts] = useState([]);
   const [artilleryOpen, setArtilleryOpen] = useState(false);
   const [applyHeatMods, setApplyHeatMods] = useState(true);
+  const [statInfoEntry, setStatInfoEntry] = useState(null);
 
   const vibrate = (pattern) => navigator?.vibrate?.(pattern);
 
@@ -307,10 +309,11 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
             return (
               <div className={styles.statCell} key={type}>
                 <img
-                  className={styles.statIcon}
+                  className={`${styles.statIcon} ${STAT_INFO[baseType(type)] ? styles.statIconClickable : ""}`}
                   src={`/assets/icons/${iconFile(type)}.jpg`}
                   alt={baseType(type)}
                   onError={(e) => { e.target.style.visibility = "hidden"; }}
+                  onClick={STAT_INFO[baseType(type)] ? () => setStatInfoEntry(STAT_INFO[baseType(type)]) : undefined}
                 />
                 {alive ? (
                   <span className={`${styles.statValue} ${checkBackground(value[damage][1])}`}>
@@ -379,10 +382,11 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
             {Object.entries(unit.heat).map(([type, value]) => (
               <div className={styles.statCell} key={type}>
                 <img
-                  className={styles.statIcon}
+                  className={`${styles.statIcon} ${STAT_INFO[baseType(type)] ? styles.statIconClickable : ""}`}
                   src={`/assets/icons/${iconFile(type)}.jpg`}
                   alt={baseType(type)}
                   onError={(e) => { e.target.style.visibility = "hidden"; }}
+                  onClick={STAT_INFO[baseType(type)] ? () => setStatInfoEntry(STAT_INFO[baseType(type)]) : undefined}
                 />
                 {determineHeatImage(value)}
               </div>
@@ -412,6 +416,23 @@ export default function UnitCard({ unit, expandUnit, index, condition }) {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Stat info overlay ── */}
+      {statInfoEntry && (
+        <div className={styles.statInfoOverlay} onClick={() => setStatInfoEntry(null)}>
+          <div className={styles.statInfoPanel} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.statInfoHeader}>
+              <span className={styles.statInfoTitle}>{statInfoEntry.name}</span>
+              <button className={styles.statInfoCloseBtn} onClick={() => setStatInfoEntry(null)}>✕</button>
+            </div>
+            <div className={styles.statInfoBody}>
+              {statInfoEntry.text.split("\n\n").map((para, i) => (
+                <p key={i} className={styles.statInfoText}>{para}</p>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

@@ -470,6 +470,88 @@ details[open] .ruleSummary::after {
   border-top: 1px solid #e8e5e0;
 }
 
+/* ── Stat icon clickable ── */
+.statIconClickable {
+  cursor: pointer;
+}
+
+.statIconClickable:active {
+  opacity: 0.7;
+}
+
+/* ── Stat info overlay ── */
+.statInfoOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.statInfoPanel {
+  background: #1a1a2e;
+  width: 100%;
+  max-width: 680px;
+  max-height: 70dvh;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.statInfoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.statInfoTitle {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #c5a028;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.statInfoCloseBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+.statInfoCloseBtn:hover {
+  color: #e05c5c;
+}
+
+.statInfoBody {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.statInfoText {
+  font-size: 0.85rem;
+  color: #c8c2b8;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
+}
+
+.statInfoText:last-child {
+  margin-bottom: 0;
+}
+
 /* ── Color tokens ── */
 .circle {
   border-radius: 50% !important;

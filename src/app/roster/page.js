@@ -58,6 +58,11 @@ const PRECON_FORCES = [
 
 const GEAR_CLASS_OPTIONS = ["All", "Light", "Medium", "Heavy", "Assault"];
 
+// Set of mech wIds that have at least one pilot whose preferredMech matches them
+const MECHS_WITH_PREFERRED_PILOT = new Set(
+  Object.values(pilotData).filter((p) => p.preferredMech).map((p) => p.preferredMech)
+);
+
 const parseGearSE = (effectText) => {
   const m = effectText.match(/Provides (Square|Circle) (.+?) SE/);
   return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
@@ -425,7 +430,12 @@ export default function Roster() {
               onError={(e) => { e.target.style.visibility = "hidden"; }}
             />
             <div className={styles.unitInfo}>
-              <span className={styles.unitName}>{unit.name}</span>
+              <span className={styles.unitName}>
+                {unit.name}
+                {unit.category === "mechs" && MECHS_WITH_PREFERRED_PILOT.has(unit.wId) && (
+                  <span className={styles.preferredPilotDot} title="Has a preferred pilot">👤</span>
+                )}
+              </span>
               <span className={styles.unitMeta}>
                 <span className={styles.unitType}>{unit.type}</span>
                 <span className={styles.unitFaction}>{unit.faction}</span>
@@ -485,7 +495,7 @@ export default function Roster() {
                   <div className={styles.rosterGearRow}>
                     {unit.pilot && (
                       <span className={`${styles.rosterGearChip} ${styles.rosterPilotChip}`}>
-                        🪖 {pilotData[unit.pilot]?.name}
+                        👤 {pilotData[unit.pilot]?.name}
                       </span>
                     )}
                     {unit.gear?.map((gId) => (
@@ -636,7 +646,7 @@ export default function Roster() {
                       className={`${styles.pickerTab} ${pickerTab === "pilot" ? styles.pickerTabActive : ""}`}
                       onClick={() => setPickerTab("pilot")}
                     >
-                      🪖 Pilot
+                      👤 Pilot
                     </button>
                     <button
                       className={`${styles.pickerTab} ${pickerTab === "gear" ? styles.pickerTabActive : ""}`}

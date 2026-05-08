@@ -984,6 +984,27 @@
   flex-shrink: 0;
 }
 
+/* ── Gunslinger badge ── */
+.pilotGunslingerBadge {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: white;
+  background: #b34a00;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Recruit cost badge ── */
+.recruitCostBadge {
+  font-size: 0.68rem;
+  color: #b34a00;
+  font-weight: bold;
+  text-align: right;
+  margin-top: 1px;
+}
+
 /* ── Pilot stat modifiers badge ── */
 .pilotStatBadge {
   font-size: 0.72rem;

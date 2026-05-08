@@ -63,14 +63,38 @@ const parseGearSE = (effectText) => {
   return m ? { seShape: m[1].toLowerCase(), seName: m[2] } : { seShape: null, seName: null };
 };
 
-// A pilot's faction field may be "All", a single faction, or "FactionA-FactionB".
-// Returns true if the mech's faction matches any of the hyphen-separated parts.
+// A pilot's faction field may be "All", "Gunslinger" (any faction), a single
+// faction name, or "FactionA-FactionB" (hyphen-separated, matches either).
 const pilotFactionMatch = (pilotFaction, mechFaction) => {
-  if (!pilotFaction || pilotFaction === "All") return true;
+  if (!pilotFaction || pilotFaction === "All" || pilotFaction === "Gunslinger") return true;
   if (!mechFaction) return false;
   return pilotFaction.split("-").some((part) =>
     mechFaction.toLowerCase().includes(part.trim().toLowerCase())
   );
+};
+
+// Abbreviations used in gunslinger recruitCosts keys → full faction names used in the game.
+const RECRUIT_FACTION_ALIASES = {
+  "H":                "Highlanders",
+  "RotS":             "Republic of the Sphere",
+  "Clan Jade Falcon": "Jade Falcons",
+};
+
+// Returns the recruit cost for a gunslinger based on the mech's faction.
+// A specific faction key overrides Base; Base applies to all other factions.
+const recruitCostFor = (pilot, mechFaction) => {
+  if (!pilot.recruitCosts) return 0;
+  if (mechFaction) {
+    for (const [key, cost] of Object.entries(pilot.recruitCosts)) {
+      if (key === "Base") continue;
+      const resolved = RECRUIT_FACTION_ALIASES[key] || key;
+      if (
+        mechFaction.toLowerCase().includes(resolved.toLowerCase()) ||
+        resolved.toLowerCase().includes(mechFaction.toLowerCase())
+      ) return cost;
+    }
+  }
+  return pilot.recruitCosts.Base || 0;
 };
 
 const hasAttachType = (unit, attachesTo) => {
@@ -119,7 +143,8 @@ export default function Roster() {
     if (!unit.pilot) return 0;
     const p = pilotData[unit.pilot];
     if (!p) return 0;
-    return (p.preferredMech === unit.wId) ? p.preferredMechCost : p.points;
+    const base = (p.preferredMech === unit.wId) ? p.preferredMechCost : p.points;
+    return base + recruitCostFor(p, unit.faction);
   };
 
   const totalPtsFor = (unit) => unit.points + gearPointsFor(unit) + pilotPointsFor(unit);
@@ -460,7 +485,7 @@ export default function Roster() {
                   <div className={styles.rosterGearRow}>
                     {unit.pilot && (
                       <span className={`${styles.rosterGearChip} ${styles.rosterPilotChip}`}>
-                        ✈ {pilotData[unit.pilot]?.name}
+                        🪖 {pilotData[unit.pilot]?.name}
                       </span>
                     )}
                     {unit.gear?.map((gId) => (
@@ -561,7 +586,11 @@ export default function Roster() {
                               />
                               <span className={styles.gearSlotName}>{p.name}</span>
                               <span className={styles.gearSlotPts}>
-                                {p.preferredMech === gearPickerUnit.wId ? p.preferredMechCost : p.points}pts
+                                {(() => {
+                                  const base = p.preferredMech === gearPickerUnit.wId ? p.preferredMechCost : p.points;
+                                  const recruit = recruitCostFor(p, gearPickerUnit.faction);
+                                  return recruit ? `${base + recruit}pts` : `${base}pts`;
+                                })()}
                               </span>
                               <button className={styles.gearSlotRemove} onClick={unequipPilot}>✕</button>
                             </>
@@ -607,7 +636,7 @@ export default function Roster() {
                       className={`${styles.pickerTab} ${pickerTab === "pilot" ? styles.pickerTabActive : ""}`}
                       onClick={() => setPickerTab("pilot")}
                     >
-                      ✈ Pilot
+                      🪖 Pilot
                     </button>
                     <button
                       className={`${styles.pickerTab} ${pickerTab === "gear" ? styles.pickerTabActive : ""}`}
@@ -628,7 +657,9 @@ export default function Roster() {
                         const equipped = gearPickerUnit.pilot === p.wId;
                         const isPreferred = p.wId === preferredPilotId;
                         const isPreferredMech = p.preferredMech === gearPickerUnit.wId;
-                        const displayCost = isPreferredMech ? p.preferredMechCost : p.points;
+                        const baseCost = isPreferredMech ? p.preferredMechCost : p.points;
+                        const recruit = recruitCostFor(p, gearPickerUnit.faction);
+                        const displayCost = baseCost + recruit;
                         const statParts = [
                           p.speed !== 0 ? `Spd ${p.speed > 0 ? "+" : ""}${p.speed}` : null,
                           p.attack !== 0 ? `Atk ${p.attack > 0 ? "+" : ""}${p.attack}` : null,
@@ -656,6 +687,9 @@ export default function Roster() {
                                   {p.tier === "legendary" && (
                                     <span className={styles.pilotLegendaryBadge}>LEGENDARY</span>
                                   )}
+                                  {p.tier === "gunslinger" && (
+                                    <span className={styles.pilotGunslingerBadge}>GUNSLINGER</span>
+                                  )}
                                 </div>
                                 {p.faction !== "All" && (
                                   <span className={styles.gearCardFaction}>{p.faction} only</span>
@@ -667,10 +701,11 @@ export default function Roster() {
                               <div className={styles.gearCardActions}>
                                 <span className={styles.gearCardPts}>
                                   {displayCost}pts
-                                  {isPreferredMech && displayCost !== p.points && (
-                                    <span className={styles.pilotPreferredCost}> ★</span>
-                                  )}
+                                  {isPreferredMech && <span className={styles.pilotPreferredCost}> ★</span>}
                                 </span>
+                                {recruit > 0 && (
+                                  <span className={styles.recruitCostBadge}>+{recruit} recruit</span>
+                                )}
                                 <button
                                   className={`${styles.gearEquipBtn} ${equipped ? styles.gearEquipBtnActive : ""}`}
                                   disabled={!equipped && (!!gearPickerUnit.pilot || (gearPickerUnit.gear?.length || 0) >= 2)}

@@ -651,20 +651,20 @@
   color: #e05c5c;
 }
 
-/* Gear slots (2 side-by-side) */
+/* Gear slots (stacked vertically) */
 .gearSlots {
   display: flex;
-  gap: 8px;
-  padding: 12px 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
 .gearSlot {
-  flex: 1;
   border-radius: 8px;
   padding: 8px 10px;
-  min-height: 54px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 8px;

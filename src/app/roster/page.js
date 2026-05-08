@@ -156,6 +156,7 @@ export default function Roster() {
   const assignPilot = (pilotId) => {
     const unit = roster.find((u) => u.id === gearPickerUnitId);
     if (!unit || unit.pilot === pilotId) return;
+    if ((unit.gear?.length || 0) >= 2) return; // both gear slots full — no room for pilot
     unit.pilot = pilotId;
     setRoster([...roster]);
   };
@@ -672,13 +673,16 @@ export default function Roster() {
                                 </span>
                                 <button
                                   className={`${styles.gearEquipBtn} ${equipped ? styles.gearEquipBtnActive : ""}`}
-                                  disabled={!equipped && !!gearPickerUnit.pilot}
+                                  disabled={!equipped && (!!gearPickerUnit.pilot || (gearPickerUnit.gear?.length || 0) >= 2)}
                                   onClick={() => (equipped ? unequipPilot() : assignPilot(p.wId))}
                                 >
                                   {equipped ? "Remove" : "Assign"}
                                 </button>
-                                {!equipped && gearPickerUnit.pilot && (
+                                {!equipped && !!gearPickerUnit.pilot && (
                                   <span className={styles.gearDisabledReason}>Pilot slot full</span>
+                                )}
+                                {!equipped && !gearPickerUnit.pilot && (gearPickerUnit.gear?.length || 0) >= 2 && (
+                                  <span className={styles.gearDisabledReason}>Remove a gear piece first</span>
                                 )}
                               </div>
                             </div>

@@ -86,9 +86,11 @@ const RECRUIT_FACTION_ALIASES = {
 };
 
 // Returns the recruit cost for a gunslinger based on the mech's faction.
+// No recruit cost when the pilot and mech share the same faction (e.g. both "Gunslinger").
 // A specific faction key overrides Base; Base applies to all other factions.
 const recruitCostFor = (pilot, mechFaction) => {
   if (!pilot.recruitCosts) return 0;
+  if (pilot.faction === mechFaction) return 0; // same faction — no recruit fee
   if (mechFaction) {
     for (const [key, cost] of Object.entries(pilot.recruitCosts)) {
       if (key === "Base") continue;
